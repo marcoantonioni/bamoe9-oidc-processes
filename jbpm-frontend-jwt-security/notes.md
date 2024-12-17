@@ -131,7 +131,10 @@ curl -w '\n' -i -X GET http://localhost:8080/frontend-global/validator
 #------------------------------------
 
 
-curl -w '\n' -i -H "Authorization: Bearer "${KC_TOKEN} -X 'GET' 'http://localhost:8880/bamoe/process-instances/hiring'
-curl -w '\n' -i -H "Authorization: Bearer "${KC_TOKEN} -X 'GET' 'http://localhost:8880/bamoe/process-data/hiring/ce9b39b4-53f0-472b-9c09-ed6a136e7c6b'
+curl -s -H "Authorization: Bearer "${KC_TOKEN} -X 'GET' 'http://localhost:8880/bamoe/process-instances/hiring' | jq .
+
+_PROC_ID=24519b79-f405-40cf-8698-abe4c1e61b5b
+curl -s -H "Authorization: Bearer "${KC_TOKEN} -X 'GET' 'http://localhost:8880/bamoe/process-data/hiring/'${_PROC_ID} | jq .
+
  
 ```

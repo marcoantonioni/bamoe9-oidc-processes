@@ -1,9 +1,9 @@
 package marco.studio.restclient;
 
-import java.util.List;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 import io.quarkus.oidc.token.propagation.AccessToken;
 import io.smallrye.mutiny.Uni;
+import jakarta.json.JsonObject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.Path;
@@ -60,13 +60,13 @@ public interface MyBamoeRestClient extends RestClientConstants {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{processName}")
-    Uni<List<Object>> getProcessInstancesList(@HeaderParam(RestClientConstants._keyHeaderServiceID) String privateServiceId, 
+    Uni<JsonObject> getProcessInstancesList(@HeaderParam(RestClientConstants._keyHeaderServiceID) String privateServiceId, 
                                                 @PathParam(value = "processName") String processName);
                                             
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{processName}/{processId}")
-    Uni<Object> getProcessInstanceData(@HeaderParam("_PRIVATE_SRV_ID") String privateServiceId, 
+    Uni<JsonObject> getProcessInstanceData(@HeaderParam("_PRIVATE_SRV_ID") String privateServiceId, 
                                         String processName, String processId);
 
 /*
