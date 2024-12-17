@@ -1,0 +1,4 @@
+org/kie/kogito/hr/Offer.class
+META-INF/panache-archive.marker
+marco/policies/MyBackendHttpSecPolicy.class
+org/kie/kogito/hr/CandidateData.class
