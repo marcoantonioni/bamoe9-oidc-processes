@@ -37,11 +37,17 @@ quarkus run
 ```
 
 ## Get access token
+
+For HR role users: alice, mary
+
+For IT role users: john, marco
+
 ```
 KC_PORT=44444
-KC_REALM=my-realm-1
-USER_NAME=requestor1
-USER_PWD=requestor1
+#KC_REALM=my-realm-1
+KC_REALM=quarkus
+USER_NAME=alice
+USER_PWD=alice
 KC_TOKEN_EXPIRATION=""
 KC_TOKEN_SCOPE=""
 KC_FULL_TOKEN=$(curl -sk -X POST http://localhost:${KC_PORT}/realms/${KC_REALM}/protocol/openid-connect/token \
@@ -53,32 +59,31 @@ if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC
 if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC_TOKEN_SCOPE=$(echo $KC_FULL_TOKEN | jq .scope | sed 's/"//g'); fi
 echo "Token expires in: ${KC_TOKEN_EXPIRATION}"
 echo "Token scopes: ${KC_TOKEN_SCOPE}"
-```
-
-## Access protected resource (any authenticated)
-```
-curl -w '\n' -i -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8080/protected/username
 ```
 
 ## Access protected resource (requestors and admins)
 ```
-curl -w '\n' -i -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8080/protected/requestors
+#------------------------------------
 
-KC_PORT=44444
-KC_REALM=my-realm-1
-USER_NAME=requestor1
-USER_PWD=requestor1
-KC_TOKEN_EXPIRATION=""
-KC_TOKEN_SCOPE=""
-KC_FULL_TOKEN=$(curl -sk -X POST http://localhost:${KC_PORT}/realms/${KC_REALM}/protocol/openid-connect/token \
-  --user my-client-bpm:my-secret-bpm -H 'content-type: application/x-www-form-urlencoded' \
-  -d 'username='${USER_NAME}'&password='${USER_PWD}'&grant_type=password&scope=openid')
-if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then echo "Logged in"; else echo "Not logged in"; fi
-if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC_TOKEN=$(echo "${KC_FULL_TOKEN}" | jq '.access_token' | sed 's/"//g'); else KC_TOKEN=""; fi
-if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC_TOKEN_EXPIRATION=$(echo $KC_FULL_TOKEN | jq .expires_in | sed 's/"//g'); fi
-if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC_TOKEN_SCOPE=$(echo $KC_FULL_TOKEN | jq .scope | sed 's/"//g'); fi
-echo "Token expires in: ${KC_TOKEN_EXPIRATION}"
-echo "Token scopes: ${KC_TOKEN_SCOPE}"
+curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN} \
+  -X POST http://localhost:8880/bamoe/process-instances/hiring \
+    -d '{"candidateData": { "name": "Jon", "lastName": "Snow", "email": "jon@snow.org", "experience": 5, "skills": ["Java", "Kogito", "Fencing"]}}' | jq .
+
+
+curl -s -H "Authorization: Bearer "${KC_TOKEN} -X 'GET' 'http://localhost:8880/bamoe/process-instances/hiring' | jq .
+
+_PROC_ID=640b7918-c332-49e5-8c10-0bd2fe4f62d3
+curl -s -H "Authorization: Bearer "${KC_TOKEN} -X 'GET' 'http://localhost:8880/bamoe/process-data/hiring/'${_PROC_ID} | jq .
+
+_PROC_ID=640b7918-c332-49e5-8c10-0bd2fe4f62d3
+curl -s -H "Authorization: Bearer "${KC_TOKEN} -X 'GET' 'http://localhost:8880/bamoe/task-list/hiring/'${_PROC_ID} | jq .
+
+
+
+
+
+
+
 
 #------------------------
 # /protected is PROTECTED with custom header
@@ -128,13 +133,6 @@ curl -w '\n' -i -X GET http://localhost:8080/frontend-global/requestor
 # token absent 401 Unauthorized
 curl -w '\n' -i -X GET http://localhost:8080/frontend-global/validator
 
-#------------------------------------
-
-
-curl -s -H "Authorization: Bearer "${KC_TOKEN} -X 'GET' 'http://localhost:8880/bamoe/process-instances/hiring' | jq .
-
-_PROC_ID=24519b79-f405-40cf-8698-abe4c1e61b5b
-curl -s -H "Authorization: Bearer "${KC_TOKEN} -X 'GET' 'http://localhost:8880/bamoe/process-data/hiring/'${_PROC_ID} | jq .
 
  
 ```

@@ -20,9 +20,9 @@ public class TokenUtils {
           StringBuffer sb = new StringBuffer();
           int idx = 0;
           for (JsonValue jsonValue : _arrRoles) {
-            sb.append(new String(jsonValue.toString()).replace("\"", ""));
+            sb.append("group=").append(new String(jsonValue.toString()).replace("\"", ""));
             if (++idx < (maxRoles)) {
-              sb.append(",");
+              sb.append("&");
             }
           }
           _rolesData = sb.toString();
