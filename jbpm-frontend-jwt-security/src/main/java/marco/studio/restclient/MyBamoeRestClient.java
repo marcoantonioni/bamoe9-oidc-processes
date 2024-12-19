@@ -65,10 +65,6 @@ public interface MyBamoeRestClient extends RestClientConstants {
     //-----------------------------------------------
     // Process
 
-    //?????????????????????????
-    //rivedere uso PathParam
-
-
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

@@ -43,6 +43,9 @@ For HR role users: alice, mary
 For IT role users: john, marco
 
 ```
+#---------------------------------
+# token for HR user
+
 KC_PORT=44444
 KC_REALM=my-realm-1
 USER_NAME=alice
@@ -111,7 +114,7 @@ curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Au
 
 
 #---------------------------------
-# IT user
+# token for IT user
 
 KC_PORT=44444
 KC_REALM=my-realm-1

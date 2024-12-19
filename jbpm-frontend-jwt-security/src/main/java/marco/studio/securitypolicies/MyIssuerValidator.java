@@ -17,6 +17,10 @@ import org.jose4j.jwt.MalformedClaimException;
 import org.jose4j.jwt.consumer.JwtContext;
 import org.jose4j.jwt.consumer.Validator;
 
+/**
+ * The purpose of this validator is to verify the JWT token data (issuer url, client id, scope). 
+ * It verifies that the token was issued by the trusted OIDC server according to the known configuration.
+ */
 @SuppressWarnings("static-access")
 @Unremovable
 @ApplicationScoped

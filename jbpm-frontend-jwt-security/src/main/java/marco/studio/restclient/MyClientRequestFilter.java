@@ -16,7 +16,7 @@ public class MyClientRequestFilter implements ResteasyReactiveClientRequestFilte
     } catch (URISyntaxException e) {
         throw new RuntimeException(e);
     }
-    requestContext.setUri(myUri);    
+    requestContext.setUri(myUri);
   }
   
 }

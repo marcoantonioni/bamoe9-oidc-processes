@@ -2,6 +2,7 @@ package marco.studio.securitypolicies;
 
 import java.security.Principal;
 import java.util.Set;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import io.quarkus.arc.Unremovable;
 import io.quarkus.logging.Log;
 import io.quarkus.security.identity.SecurityIdentity;
@@ -13,16 +14,22 @@ import io.vertx.ext.web.RoutingContext;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+/**
+ * The purpose of this policy is to protect all URIs configured in the application.properties file (see: security policies configuration)
+ */
 @ApplicationScoped
 @Unremovable
 public class MyFrontendHttpSecPolicy implements HttpSecurityPolicy {
+  
+  @ConfigProperty(name = "quarkus.http.auth.permission.bamoe.policy")
+  String _policyName;
 
   @Inject
   SecurityIdentityAssociation identity;
 
   @Override
   public String name() {
-    return "myfrontendsecpolicy";
+    return _policyName;
   }
 
   @Override
@@ -56,7 +63,7 @@ public class MyFrontendHttpSecPolicy implements HttpSecurityPolicy {
         permit = true;
       }
     }
-    Log.info("===>>> MyFrontendHttpSecPolicy _checkPermission [" + permit + "] user [" + _user + "] path[" + _path + "]");
+    Log.trace("===>>> MyFrontendHttpSecPolicy _checkPermission [" + permit + "] user [" + _user + "] path[" + _path + "]");
     return permit;
   }
 
