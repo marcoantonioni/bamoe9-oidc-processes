@@ -19,11 +19,6 @@ import marco.studio.cache.MyCachedServiceId;
 import marco.studio.restclient.MyBamoeRestClient;
 import marco.studio.utils.TokenUtils;
 
-/*
- * TBD: token propagation
- * @HeaderParam("Authorization") String authorization
- */
-
 @Authenticated
 @Path("/bamoe")
 public class MyBamoeFrontend {
