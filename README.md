@@ -2,6 +2,15 @@
 
 PoT for authentication and autorization of BAMOE v9 processes using Keycloak OIDC and JWT tokens
 
+## TTD
+<pre>
+MyBamoeRestClient
+- GraphQL
+
+MyBackendHttpSecPolicy
+- validate USER ROLES from application.properties
+</pre>
+
 ## Test commands
 <pre>
 curl -v -X 'GET' 'http://localhost:8080/hiring' -H 'accept: application/json' -H '_PRIVATE_SRV_ID: U0lELTAxMjM0NTY3ODktNDIwYWE3OWUtYzQ1ZC00NjZmLWI3ZjYtOGQzZTA2ZTZjYmE4'
