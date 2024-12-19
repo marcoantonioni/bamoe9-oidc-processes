@@ -1,18 +1,16 @@
 package marco.studio.frontend;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.logging.Log;
+import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import jakarta.json.JsonObject;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -21,11 +19,9 @@ import marco.studio.cache.MyCachedServiceId;
 import marco.studio.restclient.MyBamoeRestClient;
 import marco.studio.utils.TokenUtils;
 
+@Authenticated
 @Path("/bamoe")
 public class MyBamoeFrontend {
-
-  @ConfigProperty(name = "marco.studio.restclient.mode", defaultValue = "TP")
-  String tokenMode;
 
   @Inject
   JsonWebToken principal;
@@ -55,11 +51,27 @@ public class MyBamoeFrontend {
     return myRCBamoe.getTaskList(cacheIds.generateServiceId("BAMOE"), processName, processId, user, roles);
   }
 
+  private Uni<JsonObject> _getTaskInstance(String processName, String processId, String taskName, String taskId, String user, String roles) {
+    return myRCBamoe.getTaskInstance(cacheIds.generateServiceId("BAMOE"), processName, processId, taskName, taskId, user, roles);
+  }
+
+  private Uni<JsonObject> _setTaskInstance(String processName, String processId, String taskName, String taskId, String user, String roles, JsonObject payload) {
+    return myRCBamoe.setTaskInstance(cacheIds.generateServiceId("BAMOE"), processName, processId, taskName, taskId, user, roles, payload);
+  }
+
+  private Uni<JsonObject> _claimTaskInstance(String processName, String processId, String taskName, String taskId, String user, String roles) {
+    return myRCBamoe.claimTaskInstance(cacheIds.generateServiceId("BAMOE"), processName, processId, taskName, taskId, user, roles, null);
+  }
+
+  private Uni<JsonObject> _completeTaskInstance(String processName, String processId, String taskName, String taskId, String user, String roles, JsonObject payload) {
+    return myRCBamoe.completeTaskInstance(cacheIds.generateServiceId("BAMOE"), processName, processId, taskName, taskId, user, roles, payload);
+  }
+
   // ---------------------------------------------
 
-  // @Authenticated
   @POST
   @Path("process-instances/{processName}")
+  @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Uni<JsonObject> startProcessInstance(@PathParam(value = "processName") String processName, JsonObject payload) {
     String roles = TokenUtils.getRoles(principal);
@@ -67,7 +79,6 @@ public class MyBamoeFrontend {
     return _startProcessInstance(processName, payload);
   }
 
-  // @Authenticated
   @GET
   @Path("process-instances/{processName}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -77,7 +88,6 @@ public class MyBamoeFrontend {
     return _getProcessInstancesList(processName);
   }
 
-  // @Authenticated
   @GET
   @Path("process-data/{processName}/{processId}")
   @Produces(MediaType.APPLICATION_JSON)
@@ -87,14 +97,57 @@ public class MyBamoeFrontend {
     return _getProcessInstanceData(processName, processId);
   }
 
-  // @Authenticated
   @GET
   @Path("task-list/{processName}/{processId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Uni<JsonObject> getTaskList(@PathParam(value = "processName") String processName, @PathParam(value = "processId") String processId) {
     String roles = TokenUtils.getRoles(principal);    
-    Log.info("===>>> MyBamoeFrontend getTaskList, user[" + principal.getName() + "] with roles[" + roles + "] calling backend service...");
+    Log.info("===>>> MyBamoeFrontend getTaskList, processName["+processName+"] processId["+processId+"] user[" + principal.getName() + "] with roles[" + roles + "] calling backend service...");
     return _getTaskList(processName, processId, principal.getName(), roles);
   }
+
+  @GET
+  @Path("task-instance/{processName}/{processId}/{taskName}/{taskId}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Uni<JsonObject> getTaskInstance(@PathParam(value = "processName") String processName, @PathParam(value = "processId") String processId,
+                                          @PathParam(value = "taskName") String taskName, @PathParam(value = "taskId") String taskId) {
+    String roles = TokenUtils.getRoles(principal);    
+    Log.info("===>>> MyBamoeFrontend getTaskInstance, processName["+processName+"] processId["+processId+"] taskName["+taskName+"] taskId["+taskId+"] user[" + principal.getName() + "] with roles[" + roles + "] calling backend service...");
+    return _getTaskInstance(processName, processId, taskName, taskId, principal.getName(), roles);
+  }
+
+  @PUT
+  @Path("task-instance/{processName}/{processId}/{taskName}/{taskId}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Uni<JsonObject> setTaskInstance(@PathParam(value = "processName") String processName, @PathParam(value = "processId") String processId,
+                                          @PathParam(value = "taskName") String taskName, @PathParam(value = "taskId") String taskId, JsonObject payload) {
+    String roles = TokenUtils.getRoles(principal);    
+    Log.info("===>>> MyBamoeFrontend setTaskInstance, processName["+processName+"] processId["+processId+"] taskName["+taskName+"] taskId["+taskId+"] user[" + principal.getName() + "] with roles[" + roles + "] calling backend service...");
+    return _setTaskInstance(processName, processId, taskName, taskId, principal.getName(), roles, payload);
+  }
+
+  @POST
+  @Path("task-claim/{processName}/{processId}/{taskName}/{taskId}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Uni<JsonObject> claimTaskInstance(@PathParam(value = "processName") String processName, @PathParam(value = "processId") String processId,
+                                          @PathParam(value = "taskName") String taskName, @PathParam(value = "taskId") String taskId) {
+    String roles = TokenUtils.getRoles(principal);    
+    Log.info("===>>> MyBamoeFrontend claimTaskInstance, processName["+processName+"] processId["+processId+"] taskName["+taskName+"] taskId["+taskId+"] user[" + principal.getName() + "] with roles[" + roles + "] calling backend service...");
+    return _claimTaskInstance(processName, processId, taskName, taskId, principal.getName(), roles);
+  }
+
+  @POST
+  @Path("task-complete/{processName}/{processId}/{taskName}/{taskId}")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Uni<JsonObject> completeTaskInstance(@PathParam(value = "processName") String processName, @PathParam(value = "processId") String processId,
+                                          @PathParam(value = "taskName") String taskName, @PathParam(value = "taskId") String taskId, JsonObject payload) {
+    String roles = TokenUtils.getRoles(principal);    
+    Log.info("===>>> MyBamoeFrontend completeTaskInstance, processName["+processName+"] processId["+processId+"] taskName["+taskName+"] taskId["+taskId+"] user[" + principal.getName() + "] with roles[" + roles + "] calling backend service...");
+    return _completeTaskInstance(processName, processId, taskName, taskId, principal.getName(), roles, payload);
+  }
+
 
 }

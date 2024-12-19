@@ -39,7 +39,6 @@
   "bruteForceProtected" : true,
   "permanentLockout" : false,
   "maxTemporaryLockouts" : 0,
-  "bruteForceStrategy" : "MULTIPLE",
   "maxFailureWaitSeconds" : 900,
   "minimumQuickLoginWaitSeconds" : 60,
   "waitIncrementSeconds" : 60,

@@ -13,6 +13,7 @@ import jakarta.ws.rs.Encoded;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -64,6 +65,10 @@ public interface MyBamoeRestClient extends RestClientConstants {
     //-----------------------------------------------
     // Process
 
+    //?????????????????????????
+    //rivedere uso PathParam
+
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -81,7 +86,8 @@ public interface MyBamoeRestClient extends RestClientConstants {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{processName}/{processId}")
     Uni<JsonObject> getProcessInstanceData(@HeaderParam("_PRIVATE_SRV_ID") String privateServiceId, 
-                                            String processName, String processId);
+                                            @PathParam(value = "processName") String processName, 
+                                            @PathParam(value = "processId") String processId);
 
     //-----------------------------------------------
     // Task
@@ -90,44 +96,61 @@ public interface MyBamoeRestClient extends RestClientConstants {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("{processName}/{processId}/tasks?user={userId}&{groupNames}")
     Uni<JsonObject> getTaskList(@HeaderParam("_PRIVATE_SRV_ID") String privateServiceId, 
-                                    String processName, String processId, String userId,
+                                    @PathParam(value = "processName") String processName, 
+                                    @PathParam(value = "processId") String processId,
+                                    @PathParam(value = "userId") String userId,
                                     @PathParam(value = "groupNames") String groupNames);
 
-/*
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("tasks/{processName}/{processId}/{taskName}/{taskId}")
-    Uni<JsonObject> getTaskInstanceData(@HeaderParam("_PRIVATE_SRV_ID") String privateServiceId, 
-                                        String processName, String processId, 
-                                        String taskName, String taskId);
-
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("tasks/{processName}/{processId}/{taskName}/{taskId}?phase=claim&user={userId}&group={groupNames}")
-    Uni<JsonObject> claimTask(@HeaderParam("_PRIVATE_SRV_ID") String privateServiceId, 
-                                        String processName, String processId, 
-                                        String taskName, String taskId,
-                                        Object payload);
-
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path("tasks/{processName}/{processId}/{taskName}/{taskId}?phase=complete&user={userId}&group={groupNames}")
-    Uni<JsonObject> completeTask(@HeaderParam("_PRIVATE_SRV_ID") String privateServiceId, 
-                                        String processName, String processId, 
-                                        String taskName, String taskId,
-                                        Object payload);
+    @Path("{processName}/{processId}/{taskName}/{taskId}?user={userId}&{groupNames}")
+    Uni<JsonObject> getTaskInstance(@HeaderParam("_PRIVATE_SRV_ID") String privateServiceId, 
+                                    @PathParam(value = "processName") String processName, 
+                                    @PathParam(value = "processId") String processId,
+                                    @PathParam(value = "taskName") String taskName, 
+                                    @PathParam(value = "taskId") String taskId, 
+                                    @PathParam(value = "userId") String userId, 
+                                    @PathParam(value = "groupNames") String groupNames);
 
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("tasks/{processName}/{processId}/{taskName}/{taskId}")
-    Uni<JsonObject> setTaskInstanceData(@HeaderParam("_PRIVATE_SRV_ID") String privateServiceId, 
-                                        String processName, String processId, 
-                                        String taskName, String taskId,
-                                        Object payload);
- */
+    @Path("{processName}/{processId}/{taskName}/{taskId}?user={userId}&{groupNames}")
+    Uni<JsonObject> setTaskInstance(@HeaderParam("_PRIVATE_SRV_ID") String privateServiceId, 
+                                    @PathParam(value = "processName") String processName, 
+                                    @PathParam(value = "processId") String processId,
+                                    @PathParam(value = "taskName") String taskName, 
+                                    @PathParam(value = "taskId") String taskId, 
+                                    @PathParam(value = "userId") String userId, 
+                                    @PathParam(value = "groupNames") String groupNames,
+                                    Object payload);
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("{processName}/{processId}/{taskName}/{taskId}?phase=claim&user={userId}&{groupNames}")
+    Uni<JsonObject> claimTaskInstance(@HeaderParam("_PRIVATE_SRV_ID") String privateServiceId, 
+                                        @PathParam(value = "processName") String processName, 
+                                        @PathParam(value = "processId") String processId,
+                                        @PathParam(value = "taskName") String taskName, 
+                                        @PathParam(value = "taskId") String taskId, 
+                                        @PathParam(value = "userId") String userId, 
+                                        @PathParam(value = "groupNames") String groupNames,
+                                        JsonObject payload);
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("{processName}/{processId}/{taskName}/{taskId}?phase=complete&user={userId}&{groupNames}")
+    Uni<JsonObject> completeTaskInstance(@HeaderParam("_PRIVATE_SRV_ID") String privateServiceId, 
+                                            @PathParam(value = "processName") String processName, 
+                                            @PathParam(value = "processId") String processId,
+                                            @PathParam(value = "taskName") String taskName, 
+                                            @PathParam(value = "taskId") String taskId, 
+                                            @PathParam(value = "userId") String userId, 
+                                            @PathParam(value = "groupNames") String groupNames,
+                                            JsonObject payload);
+
 
 
 }
