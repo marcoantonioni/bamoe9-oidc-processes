@@ -61,11 +61,6 @@ if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC
 if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC_TOKEN_SCOPE=$(echo $KC_FULL_TOKEN | jq .scope | sed 's/"//g'); fi
 echo "Token expires in: ${KC_TOKEN_EXPIRATION}"
 echo "Token scopes: ${KC_TOKEN_SCOPE}"
-```
-
-## Access protected resources (jbpm-frontend-jwt-security)
-```
-#------------------------------------
 
 _PROCESS_NAME=hiring
 
@@ -89,12 +84,13 @@ curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamo
 
 # legge dettaglio istanza task
 TASK_NAME=HRInterview
-TASK_ID=d07dcd9f-bcde-4228-9605-ae80f8af3855
+TASK_ID=748ec1f8-3d72-410a-a54b-309d0a5704cd
 
 curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/task-instance/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} | jq .
 
 # claim task
 curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN} -X POST http://localhost:8880/bamoe/task-claim/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} | jq .
+
 
 # aggiorna dettaglio istanza task
 curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN} -X PUT http://localhost:8880/bamoe/task-instance/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} \
@@ -103,12 +99,38 @@ curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Au
     "category": "Very Old Senior Software Engineer",
     "salary": 99999
   },
+  "candidate": {
+    "name": "Jon",
+    "lastName": "Snow",
+    "email": "jon@snow.org",
+    "experience": 5,
+    "skills": [
+      "Java",
+      "Kogito",
+      "Fencing"
+    ]
+  },
   "approve": false
 }' | jq .
 
 # complete task
 curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN} -X POST http://localhost:8880/bamoe/task-complete/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} \
 -d '{
+  "offer": {
+    "category": "Very Old Senior Software Engineer",
+    "salary": 99999
+  },
+  "candidate": {
+    "name": "Jon",
+    "lastName": "Snow",
+    "email": "jon@snow.org",
+    "experience": 5,
+    "skills": [
+      "Java",
+      "Kogito",
+      "Fencing"
+    ]
+  },
   "approve": true
 }' | jq .
 
@@ -134,5 +156,13 @@ echo "Token scopes: ${KC_TOKEN_SCOPE}"
 
 # lista task della istanza
 curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/task-list/${_PROCESS_NAME}/${_PROC_ID} | jq .
+
+TASK_NAME=ITInterview
+TASK_ID=0dbf03de-7a77-4916-843c-0560d0988abb
+
+curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN} -X POST http://localhost:8880/bamoe/task-complete/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} \
+-d '{
+  "approve": true
+}' | jq .
 
 ```
