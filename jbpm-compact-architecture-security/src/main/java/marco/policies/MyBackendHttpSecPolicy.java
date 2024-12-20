@@ -21,7 +21,8 @@ import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
 
 /**
- * The purpose of this policy is to protect all URIs configured in the application.properties file (see: security policies configuration)
+ * The purpose of this policy is to intercept calls to all URIs configured in the application.properties file (see: security policies configuration)
+ * DO NOT USE in production, it's only an example !!!
  */
 @ApplicationScoped
 @Unremovable
@@ -47,7 +48,7 @@ public class MyBackendHttpSecPolicy implements HttpSecurityPolicy {
 
   @Override
   public String name() {
-    Log.info("===>>> MyBackendHttpSecPolicy POLICY NAME: " + _policyName + ", validateServiceHeader["+validateServiceHeader+"] validateOnlyLocalHost["+validateOnlyLocalHost+"] validateOnlyAuthenticated[" + validateOnlyAuthenticated + "]");
+    Log.info("===>>> MyBackendHttpSecPolicy POLICY NAME: " + _policyName + ", validateServiceHeader[" + validateServiceHeader + "] validateOnlyLocalHost[" + validateOnlyLocalHost + "] validateOnlyAuthenticated[" + validateOnlyAuthenticated + "]");
     return _policyName;
   }
 
@@ -89,7 +90,7 @@ public class MyBackendHttpSecPolicy implements HttpSecurityPolicy {
 
     return headerFound;
   }
-
+  
   private static boolean _isAuthenticated(String requiredScope, String requiredCliId, RoutingContext routingContext) {
     boolean valid = false;
 
@@ -100,15 +101,15 @@ public class MyBackendHttpSecPolicy implements HttpSecurityPolicy {
         Principal principal = secIdentity.getPrincipal();
         if (principal != null) {
           String _user = principal.getName();
-          String _path = routingContext.request().path();
           if (_user.length() > 0) {
             valid = true;
             if (Log.isTraceEnabled()) {
+              String _path = routingContext.request().path();
               Log.trace("===>>> MyBackendHttpSecPolicy invoked path: " + _path);
               Log.trace("===>>> MyBackendHttpSecPolicy user: " + _user);
               Set<String> roles = secIdentity.getRoles();
               for (String _role : roles) {
-                Log.trace("===>>> MyBackendHttpSecPolicy user roles: " + _role);
+                Log.trace("===>>> MyBackendHttpSecPolicy user role: " + _role);
               }
             }
           }
@@ -117,50 +118,55 @@ public class MyBackendHttpSecPolicy implements HttpSecurityPolicy {
     }
 
     if (!valid) {
+      // try to get authorization header (must be JWT, Bearer mode)
       String headerAuth = routingContext.request().getHeader("Authorization");
       Log.trace("===>>> MyBackendHttpSecPolicy Authorization header: " + headerAuth);
       if (headerAuth != null && headerAuth.startsWith("Bearer ")) {
-        String token = headerAuth.replace("Bearer ", "");
-        String[] chunks = token.split("\\.");
-        if (chunks.length > 1) {
-          Base64.Decoder decoder = Base64.getUrlDecoder();
-          String decodedChunk = new String(decoder.decode(chunks[1]));
-          JsonReader reader = Json.createReader(new StringReader(decodedChunk));
-          JsonObject _json = reader.readObject();
-          JsonValue _urlIssuer = _json.get("iss");
-          JsonValue _clientName = _json.get("azp");
-          JsonValue _realmAccess = _json.get("realm_access");
-          JsonValue _clientScope = _json.get("scope");
-          String urlIssuer = _urlIssuer.toString().replaceAll("\"", "");
-          String clientName = _clientName.toString().replaceAll("\"", "");
-          String clientScope = _clientScope.toString().replaceAll("\"", "");
-          String realmAccess = _realmAccess.toString().replaceAll("\"", "");
+        try {
+          String token = headerAuth.replace("Bearer ", "");
+          String[] chunks = token.split("\\.");
+          if (chunks.length > 1) {
+            Base64.Decoder decoder = Base64.getUrlDecoder();
+            String decodedChunk = new String(decoder.decode(chunks[1]));
+            JsonReader reader = Json.createReader(new StringReader(decodedChunk));
+            JsonObject _json = reader.readObject();
+            JsonValue _urlIssuer = _json.get("iss");
+            JsonValue _clientName = _json.get("azp");
+            JsonValue _realmAccess = _json.get("realm_access");
+            JsonValue _clientScope = _json.get("scope");
+            String urlIssuer = _urlIssuer.toString().replaceAll("\"", "");
+            String clientName = _clientName.toString().replaceAll("\"", "");
+            String clientScope = _clientScope.toString().replaceAll("\"", "");
+            String realmAccess = _realmAccess.toString().replaceAll("\"", "");
 
-          Log.trace("===>>> MyBackendHttpSecPolicy JWT FIELD URL: " + urlIssuer);
-          Log.trace("===>>> MyBackendHttpSecPolicy JWT FIELD CLIENT NAME: " + clientName);
-          Log.trace("===>>> MyBackendHttpSecPolicy JWT FIELD SCOPE: " + clientScope);
-          Log.trace("===>>> MyBackendHttpSecPolicy JWT FIELD REALM: " + realmAccess);
+            Log.trace("===>>> MyBackendHttpSecPolicy JWT FIELD URL: " + urlIssuer);
+            Log.trace("===>>> MyBackendHttpSecPolicy JWT FIELD CLIENT NAME: " + clientName);
+            Log.trace("===>>> MyBackendHttpSecPolicy JWT FIELD SCOPE: " + clientScope);
+            Log.trace("===>>> MyBackendHttpSecPolicy JWT FIELD REALM: " + realmAccess);
 
-          JsonValue _roles = _realmAccess.asJsonObject().get("roles");
-          JsonArray _rolesArray = _roles.asJsonArray();
-          for (int i = 0; i < _rolesArray.size(); i++) {
-            Log.trace("===>>> MyBackendHttpSecPolicy JWT ROLE: " + _rolesArray.get(i).toString());
-          }
+            JsonValue _roles = _realmAccess.asJsonObject().get("roles");
+            JsonArray _rolesArray = _roles.asJsonArray();
+            for (int i = 0; i < _rolesArray.size(); i++) {
+              Log.trace("===>>> MyBackendHttpSecPolicy JWT ROLE: " + _rolesArray.get(i).toString());
+            }
 
-          StringTokenizer st = new StringTokenizer(clientScope, " ");
-          boolean scopeFound = false;
-          while (st.hasMoreElements()) {
-            String _token = st.nextToken();
-            scopeFound = requiredScope.equals(_token);
-            if (scopeFound) {
-              break;
+            StringTokenizer st = new StringTokenizer(clientScope, " ");
+            boolean scopeFound = false;
+            while (st.hasMoreElements()) {
+              String _token = st.nextToken();
+              scopeFound = requiredScope.equals(_token);
+              if (scopeFound) {
+                break;
+              }
+            }
+
+            // check if 'scope' and 'oidc client id' are both valid
+            if (scopeFound && requiredCliId.equals(clientName)) {
+              valid = true;
             }
           }
-
-          if (scopeFound && requiredCliId.equals(clientName)) {
-            valid = true;
-          }
-
+        } catch (Throwable t) {
+          Log.fatal("===>>> MyBackendHttpSecPolicy JWT Format error !", t);
         }
       }
     }
