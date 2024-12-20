@@ -75,9 +75,9 @@ public class MyBamoeFrontend {
       Log.info("===>>> MyBamoeFrontend startProcessInstance, user[" + principal.getName() + "] with roles[" + _roles.keySet() + "] calling backend service...");
       return myRCBamoe.startProcessInstance(cacheIds.generateServiceId("BAMOE"), processName, payload);
     } else {
-      String _msg = "user ["+principal.getName()+"] not in roles authorized to start an instance of process["+processName+"]";
-      Log.info("===>>> MyBamoeFrontend startProcessInstance, "+_msg);
-      String _jb = "{\"errorCode\": 403, \"errorMessage\": \""+_msg+"\"}";
+      String _msg = "user [" + principal.getName() + "] not in roles authorized to start an instance of process[" + processName + "]";
+      Log.info("===>>> MyBamoeFrontend startProcessInstance, " + _msg);
+      String _jb = "{\"errorCode\": 403, \"errorMessage\": \"" + _msg + "\"}";
       return Uni.createFrom().item(Json.createReader(new StringReader(_jb)).readObject());
     }
   }
@@ -146,6 +146,17 @@ public class MyBamoeFrontend {
     String roles = TokenUtils.getRoles(principal);
     Log.info("===>>> MyBamoeFrontend completeTaskInstance, processName[" + processName + "] processId[" + processId + "] taskName[" + taskName + "] taskId[" + taskId + "] user[" + principal.getName() + "] with roles[" + roles + "] calling backend service...");
     return myRCBamoe.completeTaskInstance(cacheIds.generateServiceId("BAMOE"), processName, processId, taskName, taskId, principal.getName(), roles, payload);
+  }
+
+  @POST
+  @Path("graphql")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Uni<JsonObject> graphql(JsonObject payload) {
+    String _msg = "graphql API not yet implemented";
+    Log.info("===>>> MyBamoeFrontend startProcessInstance, " + _msg);
+    String _jb = "{\"errorCode\": 404, \"errorMessage\": \"" + _msg + "\"}";
+    return Uni.createFrom().item(Json.createReader(new StringReader(_jb)).readObject());
   }
 
 

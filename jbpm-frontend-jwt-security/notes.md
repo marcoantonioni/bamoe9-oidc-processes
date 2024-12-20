@@ -165,4 +165,11 @@ curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Au
   "approve": true
 }' | jq .
 
+#---------------------------------------------
+# graphql
+# NOT YET IMPLEMENTED
+
+curl -v -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN}   -X POST http://localhost:8880/bamoe/graphql -d '{}' | jq .
+
+
 ```
