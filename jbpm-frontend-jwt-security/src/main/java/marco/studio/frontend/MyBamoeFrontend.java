@@ -1,12 +1,21 @@
 package marco.studio.frontend;
 
+import java.io.StringReader;
+import java.util.Map;
+import java.util.StringTokenizer;
+import org.eclipse.microprofile.config.ConfigProvider;
+import org.eclipse.microprofile.config.inject.ConfigProperties;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import io.quarkus.logging.Log;
 import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
+import jakarta.json.Json;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonValue;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -15,6 +24,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import marco.studio.cache.MyCachedServiceId;
 import marco.studio.restclient.MyBamoeRestClient;
 import marco.studio.utils.TokenUtils;
@@ -22,6 +32,8 @@ import marco.studio.utils.TokenUtils;
 @Authenticated
 @Path("/bamoe")
 public class MyBamoeFrontend {
+
+  static String _starterRolesPrefix = "marco.bamoe.process-starter-roles.";
 
   @Inject
   JsonWebToken principal;
@@ -33,15 +45,41 @@ public class MyBamoeFrontend {
   @RestClient
   MyBamoeRestClient myRCBamoe;
 
+  private boolean _roleEnabled(String processName, Map<String, String> _roles) {
+    boolean _enabled = true;
+    String _configuredRoles = ConfigProvider.getConfig().getValue(_starterRolesPrefix + processName, String.class);
+    if (_configuredRoles != null && _configuredRoles.length() > 0) {
+      _enabled = false;
+      StringTokenizer st = new StringTokenizer(_configuredRoles, ",");
+      boolean roleFound = false;
+      while (st.hasMoreElements()) {
+        String _token = st.nextToken().trim();
+        roleFound = _roles.get(_token) != null;
+        if (roleFound) {
+          _enabled = true;
+          break;
+        }
+      }
+
+    }
+    return _enabled;
+  }
 
   @POST
   @Path("process-instances/{processName}")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Uni<JsonObject> startProcessInstance(@PathParam(value = "processName") String processName, JsonObject payload) {
-    String roles = TokenUtils.getRoles(principal);
-    Log.info("===>>> MyBamoeFrontend startProcessInstance, user[" + principal.getName() + "] with roles[" + roles + "] calling backend service...");
-    return myRCBamoe.startProcessInstance(cacheIds.generateServiceId("BAMOE"), processName, payload);
+    Map<String, String> _roles = TokenUtils.getRolesAsMap(principal);
+    if (_roleEnabled(processName, _roles)) {
+      Log.info("===>>> MyBamoeFrontend startProcessInstance, user[" + principal.getName() + "] with roles[" + _roles.keySet() + "] calling backend service...");
+      return myRCBamoe.startProcessInstance(cacheIds.generateServiceId("BAMOE"), processName, payload);
+    } else {
+      String _msg = "user ["+principal.getName()+"] not in roles authorized to start an instance of process["+processName+"]";
+      Log.info("===>>> MyBamoeFrontend startProcessInstance, "+_msg);
+      String _jb = "{\"errorCode\": 403, \"errorMessage\": \""+_msg+"\"}";
+      return Uni.createFrom().item(Json.createReader(new StringReader(_jb)).readObject());
+    }
   }
 
   @GET

@@ -1,5 +1,7 @@
 package marco.studio.utils;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import io.quarkus.logging.Log;
 import jakarta.json.JsonArray;
@@ -12,7 +14,7 @@ public class TokenUtils {
     String _rolesData = "";
     if (principal != null) {
       JsonObject realmAccess = (JsonObject) principal.getClaim("realm_access");
-      Log.trace("===>>> TokenUtils realmAccess: " + realmAccess);
+      Log.trace("===>>> TokenUtils getRoles realmAccess: " + realmAccess);
       if (realmAccess != null) {
         JsonArray _arrRoles = (JsonArray) realmAccess.get("roles");
         if (_arrRoles != null) {
@@ -20,13 +22,32 @@ public class TokenUtils {
           StringBuffer sb = new StringBuffer();
           int idx = 0;
           for (JsonValue jsonValue : _arrRoles) {
-            sb.append("group=").append(new String(jsonValue.toString()).replace("\"", ""));
+            sb.append("group=").append(new String(jsonValue.toString()).replace("\"", "").trim());
             if (++idx < (maxRoles)) {
               sb.append("&");
             }
           }
           _rolesData = sb.toString();
-          Log.trace("===>>> TokenUtils user[" + principal.getName() + "] roles: " + _rolesData);
+          Log.trace("===>>> TokenUtils getRoles user[" + principal.getName() + "] roles: " + _rolesData);
+        }
+      }
+    }
+    return _rolesData;
+  }
+
+  public static Map<String, String> getRolesAsMap(JsonWebToken principal) {
+    HashMap<String,String> _rolesData = new HashMap<>();
+    if (principal != null) {
+      JsonObject realmAccess = (JsonObject) principal.getClaim("realm_access");
+      Log.trace("===>>> TokenUtils getRolesAsMap realmAccess: " + realmAccess);
+      if (realmAccess != null) {
+        JsonArray _arrRoles = (JsonArray) realmAccess.get("roles");
+        if (_arrRoles != null) {
+          for (JsonValue jsonValue : _arrRoles) {
+            String _r = new String(jsonValue.toString()).replace("\"", "").trim();
+            _rolesData.put(_r, _r);
+          }
+          Log.trace("===>>> TokenUtils getRolesAsMap user[" + principal.getName() + "] roles: " + _rolesData.keySet());
         }
       }
     }
