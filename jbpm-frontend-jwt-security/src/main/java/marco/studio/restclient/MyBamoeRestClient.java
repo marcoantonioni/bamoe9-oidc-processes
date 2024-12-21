@@ -23,11 +23,6 @@ import jakarta.ws.rs.core.MediaType;
  * see property: marco.studio.restclient.{*}/mp-rest/url=
  */
 
-/**
- * List of URI for 'hiring' process /hiring /hiring/HRInterview/schema /hiring/ITInterview/schema /hiring/schema /hiring/{id} /hiring/{id}/HRInterview/{taskId} /hiring/{id}/HRInterview/{taskId}/attachments /hiring/{id}/HRInterview/{taskId}/attachments/{attachmentId} /hiring/{id}/HRInterview/{taskId}/comments /hiring/{id}/HRInterview/{taskId}/comments/{commentId} /hiring/{id}/HRInterview/{taskId}/phases/{phase} /hiring/{id}/HRInterview/{taskId}/schema /hiring/{id}/ITInterview/{taskId}
- * /hiring/{id}/ITInterview/{taskId}/attachments /hiring/{id}/ITInterview/{taskId}/attachments/{attachmentId} /hiring/{id}/ITInterview/{taskId}/comments /hiring/{id}/ITInterview/{taskId}/comments/{commentId} /hiring/{id}/ITInterview/{taskId}/phases/{phase} /hiring/{id}/ITInterview/{taskId}/schema /hiring/{id}/tasks
- */
-
 @RegisterRestClient
 @AccessToken
 @RegisterProvider(MyClientRequestFilter.class)
