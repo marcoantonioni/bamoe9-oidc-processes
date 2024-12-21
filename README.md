@@ -128,7 +128,7 @@ Groups: <b>HRGroup</b>, <b>ITGroup</b>
 
 Groups to Roles mapping: <b>HRGroup</b>, <b>ITGroup</b>
 
-<img src="./docs/Keycloak-Groups-RoleMapping.png" width="70%" height="70%">
+<img src="./docs/Keycloak-Groups-RoleMapping.png" width="75%" height="75%">
 
 Users in group HRGroup (role HR): <b>alice</b>, <b>mary</b>
 
