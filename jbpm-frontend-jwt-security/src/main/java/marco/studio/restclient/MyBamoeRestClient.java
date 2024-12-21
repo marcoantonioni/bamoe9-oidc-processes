@@ -1,15 +1,11 @@
 package marco.studio.restclient;
 
-import java.util.Collection;
-import java.util.Map;
 import org.eclipse.microprofile.rest.client.annotation.RegisterProvider;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
-import org.jboss.resteasy.reactive.RestQuery;
 import io.quarkus.oidc.token.propagation.AccessToken;
 import io.smallrye.mutiny.Uni;
 import jakarta.json.JsonObject;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.Encoded;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
