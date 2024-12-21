@@ -233,7 +233,7 @@ This is an example of KC_FULL_TOKEN content
 
 echo $KC_FULL_TOKEN | jq .
 
-```
+<pre>
 {
   "access_token": "eyJhbGci.......HRPcCOaTVgeXw",
   "expires_in": 14400,
@@ -245,18 +245,18 @@ echo $KC_FULL_TOKEN | jq .
   "session_state": "e9fcaf93-dd0a-4cce-8c3a-64cd3f2b9c1b",
   "scope": "openid profile email my-bpm-scope"
 }
-```
+</pre>
 
 ### 2. Start a process instance
 
 The 'frontend' application exposes REST API on path '/bamoe'
 
 As from configuration only users belonging to 'HR' role can start process instances. So 'alice' is authorized.
-```
+<pre>
 # list of roles authorized to start a process instance
 # last key segment must be equal to process name
 marco.bamoe.process-starter-roles.hiring=HR
-```
+</pre>
 
 ```
 _PROCESS_NAME=hiring
@@ -272,7 +272,7 @@ echo "new instance id: "${_PROC_ID}
 
 Now try the same command with verbose flag -v and without the 'Authorization' header or with fake value
 
-MUST fail
+this MUST fail
 ```
 curl -v -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer XYZ" \
   -X POST http://localhost:8880/bamoe/process-instances/${_PROCESS_NAME} \
@@ -280,7 +280,7 @@ curl -v -H "Content-Type: application/json" -H "Accept: application/json" -H "Au
 ```
 
 the error is '401 Unauthorized' and text should be similar to
-```
+<pre>
 > POST /bamoe/process-instances/hiring HTTP/1.1
 > Host: localhost:8880
 > User-Agent: curl/7.76.1
@@ -295,7 +295,7 @@ the error is '401 Unauthorized' and text should be similar to
 < content-length: 0
 < 
 * Connection #0 to host localhost left intact
-```
+</pre>
 
 Now login with user 'john' and try to start a process instance.
 ```
@@ -319,6 +319,7 @@ echo "Token expires in: ${KC_TOKEN_EXPIRATION}"
 echo "Token scopes: ${KC_TOKEN_SCOPE}"
 ```
 
+try to start a process instance, this MUST fail
 ```
 curl -v -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN} \
   -X POST http://localhost:8880/bamoe/process-instances/${_PROCESS_NAME} \
@@ -326,7 +327,7 @@ curl -v -H "Content-Type: application/json" -H "Accept: application/json" -H "Au
 ```
 
 the error is '403 Forbidden' and text should be similar to
-```
+<pre>
 > Content-Length: 138
 > 
 * Mark bundle as not supporting multiuse
@@ -334,7 +335,7 @@ the error is '403 Forbidden' and text should be similar to
 < content-length: 0
 < 
 * Connection #0 to host localhost left intact
-```
+</pre>
 
 ### 3. Get a list of process instances
 
@@ -392,17 +393,17 @@ curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamo
 
 note that the task status has now changed from
 
-```
+<pre>
   "phase": "active",
   "phaseStatus": "Ready",
-```
+</pre>
 
 to 
 
-```
+<pre>
   "phase": "claim",
   "phaseStatus": "Reserved",
-```
+</pre>
 
 ### 5. Complete a tasks
 
