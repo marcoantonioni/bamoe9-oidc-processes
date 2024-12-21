@@ -8,6 +8,8 @@ import org.eclipse.microprofile.config.inject.ConfigProperties;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.jboss.resteasy.reactive.common.NotImplementedYet;
+import org.jboss.resteasy.reactive.server.ServerExceptionMapper;
 import io.quarkus.logging.Log;
 import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Uni;
@@ -154,10 +156,14 @@ public class MyBamoeFrontend {
   @Produces(MediaType.APPLICATION_JSON)
   public Uni<JsonObject> graphql(JsonObject payload) {
     String _msg = "graphql API not yet implemented";
-    Log.info("===>>> MyBamoeFrontend startProcessInstance, " + _msg);
-    String _jb = "{\"errorCode\": 404, \"errorMessage\": \"" + _msg + "\"}";
-    return Uni.createFrom().item(Json.createReader(new StringReader(_jb)).readObject());
+    Log.info("===>>> MyBamoeFrontend graphql, " + _msg);
+    throw new NotImplementedYet();
   }
 
 
+
+  @ServerExceptionMapper(NotImplementedYet.class)
+  public Response handleIllegal() {
+    return Response.status(501).build();
+  }
 }
