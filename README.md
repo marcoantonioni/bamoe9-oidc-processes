@@ -48,10 +48,9 @@ A Java class '<b>MyBackendHttpSecPolicy</b>' that implements the interface is ad
 This Java class will need to implement the method
 
 <b>
-<code>
-@Override
-public Uni<CheckResult> checkPermission(RoutingContext routingContext, Uni<SecurityIdentity> identity, AuthorizationRequestContext requestContext)
-</code>
+<code>@Override
+
+public Uni<CheckResult> checkPermission(RoutingContext routingContext, Uni<SecurityIdentity> identity, AuthorizationRequestContext requestContext)</code>
 </b>
 
 This method will perform a series of custom checks to authorize every single request that will be received for one or more BPMN processes; in this example for the process exposed on REST transport with the URI <b>"/hiring"</b>.
