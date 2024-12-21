@@ -17,23 +17,8 @@ https://quarkus.io/guides/security-openid-connect-client
 </pre>
 
 
-<pre>
-    /*
-    if (MyBackendHttpSecPolicy._trace) {
-      System.out.println("===>>> MyBackendHttpSecPolicy headerFound: " + headerFound);
-      Iterator<Entry<String, String>> _headers = routingContext.request().headers().iterator();
-      _headers.forEachRemaining(
-          fieldName -> {
-            if (fieldName.getKey().equals("_PRIVATE_SRV_ID")) {
-              System.out.println("===>>> _header: " + fieldName.getValue());
-            }
-          });
-    }
-    */
-
-</pre>
 ```
-quarkus run
+quarkus dev
 ```
 
 ## Get access token
@@ -48,12 +33,14 @@ For IT role users: john, marco
 
 KC_PORT=44444
 KC_REALM=my-realm-1
+KC_CLIENT_USER=my-client-bpm
+KC_CLIENT_SECRET=my-secret-bpm
 USER_NAME=alice
 USER_PWD=alice
 KC_TOKEN_EXPIRATION=""
 KC_TOKEN_SCOPE=""
 KC_FULL_TOKEN=$(curl -sk -X POST http://localhost:${KC_PORT}/realms/${KC_REALM}/protocol/openid-connect/token \
-  --user my-client-bpm:my-secret-bpm -H 'content-type: application/x-www-form-urlencoded' \
+  --user ${KC_CLIENT_USER}:${KC_CLIENT_SECRET} -H 'content-type: application/x-www-form-urlencoded' \
   -d 'username='${USER_NAME}'&password='${USER_PWD}'&grant_type=password&scope=openid')
 if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then echo "Logged in"; else echo "Not logged in"; fi
 if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC_TOKEN=$(echo "${KC_FULL_TOKEN}" | jq '.access_token' | sed 's/"//g'); else KC_TOKEN=""; fi
@@ -140,12 +127,14 @@ curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Au
 
 KC_PORT=44444
 KC_REALM=my-realm-1
+KC_CLIENT_USER=my-client-bpm
+KC_CLIENT_SECRET=my-secret-bpm
 USER_NAME=john
 USER_PWD=john
 KC_TOKEN_EXPIRATION=""
 KC_TOKEN_SCOPE=""
 KC_FULL_TOKEN=$(curl -sk -X POST http://localhost:${KC_PORT}/realms/${KC_REALM}/protocol/openid-connect/token \
-  --user my-client-bpm:my-secret-bpm -H 'content-type: application/x-www-form-urlencoded' \
+  --user ${KC_CLIENT_USER}:${KC_CLIENT_SECRET} -H 'content-type: application/x-www-form-urlencoded' \
   -d 'username='${USER_NAME}'&password='${USER_PWD}'&grant_type=password&scope=openid')
 if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then echo "Logged in"; else echo "Not logged in"; fi
 if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC_TOKEN=$(echo "${KC_FULL_TOKEN}" | jq '.access_token' | sed 's/"//g'); else KC_TOKEN=""; fi

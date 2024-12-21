@@ -1,6 +1,5 @@
 package marco.studio.frontend;
 
-import java.io.StringReader;
 import java.util.Map;
 import java.util.StringTokenizer;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -12,10 +11,10 @@ import io.quarkus.logging.Log;
 import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
-import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.NotAllowedException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -72,11 +71,8 @@ public class MyBamoeFrontend {
     if (_roleEnabled(processName, _roles)) {
       Log.info("===>>> MyBamoeFrontend startProcessInstance, user[" + principal.getName() + "] with roles[" + _roles.keySet() + "] calling backend service...");
       return myRCBamoe.startProcessInstance(cacheIds.generateServiceId("BAMOE"), processName, payload);
-    } else {
-      String _msg = "user [" + principal.getName() + "] not in roles authorized to start an instance of process[" + processName + "]";
-      Log.info("===>>> MyBamoeFrontend startProcessInstance, " + _msg);
-      String _jb = "{\"errorCode\": 403, \"errorMessage\": \"" + _msg + "\"}";
-      return Uni.createFrom().item(Json.createReader(new StringReader(_jb)).readObject());
+    } else {      
+      throw new NotAllowedException(Response.status(405).build());
     }
   }
 
@@ -158,8 +154,13 @@ public class MyBamoeFrontend {
 
 
 
+  @ServerExceptionMapper(NotAllowedException.class)
+  public Response notAuthorized() {
+    return Response.status(403).build();
+  }
+
   @ServerExceptionMapper(NotImplementedYet.class)
-  public Response handleIllegal() {
+  public Response notImplemented() {
     return Response.status(501).build();
   }
 }

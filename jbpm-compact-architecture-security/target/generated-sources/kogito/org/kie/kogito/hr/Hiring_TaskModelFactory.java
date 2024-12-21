@@ -24,10 +24,10 @@ public class Hiring_TaskModelFactory {
 
     public static TaskModel from(org.kie.kogito.process.WorkItem workItem) {
         switch(workItem.getNodeId().toExternalFormat()) {
-            case "_B8C4F63C-81AD-4291-9C1B-84967277EEF6":
-                return Hiring__B8C4F63C_81AD_4291_9C1B_84967277EEF6_TaskModel.from(workItem);
             case "_8962C15F-55EC-46F7-B926-5D5A1FD8D35E":
                 return Hiring__8962C15F_55EC_46F7_B926_5D5A1FD8D35E_TaskModel.from(workItem);
+            case "_B8C4F63C-81AD-4291-9C1B-84967277EEF6":
+                return Hiring__B8C4F63C_81AD_4291_9C1B_84967277EEF6_TaskModel.from(workItem);
             default:
                 throw new IllegalArgumentException("Invalid task name for work item " + workItem);
         }

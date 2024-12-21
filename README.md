@@ -148,6 +148,289 @@ The application code present in this repository is purely for example purposes a
 Any use in whole or in part is at your own risk.
 </i></b>
 
-## Run commands
+## Run the demo
+
+Instructions to run a test:
+
+### Frontend application
+Open a first shell in the folder 'jbpm-frontend-jwt-security' and run the command <pre>quarkus dev</pre>.
+
+The dev-services start a Keycloak container based on 'quay.io/keycloak/keycloak:25.0.6' according to dependency.
+
+This Keycloak server is configured on port 44444 with custom realm defined in 'my-realm-1-realm.json'.
+
+The dev-ui is at the link http://localhost:8880/q/dev-ui/extensions
+
+See 'application.properties' file
 <pre>
+quarkus.keycloak.devservices.realm-path=my-realm-1-realm.json
+quarkus.keycloak.devservices.port=44444
+
+quarkus.http.port=8880
 </pre>
+
+### Backend application
+Open a second shell in the folder 'jbpm-compact-architecture-security' and run the command <pre>quarkus dev</pre>.
+
+The dev-services start a Postgres container based on 'docker.io/library/postgres:14' according to dependency.
+
+The dev-ui is at the link http://localhost:8080/q/dev-ui/extensions
+
+With security policies enabled (in this case also in DEV profile) the process management console 'jBPM Quarkus Dev UI' cannot work.
+In 'Developer Tools' of your browser the error is
+<pre>
+Request URL:
+http://localhost:8080/graphql
+Request Method:
+POST
+Status Code:
+403 Forbidden
+Remote Address:
+[::1]:8080
+Referrer Policy:
+strict-origin-when-cross-origin
+</pre>
+
+Our security protection is working fine !
+
+Now let's continue the tests using 'curl' to trigger the various features.
+
+The token and tasks can expire, in case of empty result of the 'curl' command use the -v flag instead of -s to have the details of the operation.
+
+### 1. Login to Keycloak and grab a JWT token
+<pre>
+# token for HR user 
+# run all the following commands to get the service token in KC_TOKEN (from .access_token attribute)
+
+KC_PORT=44444
+KC_REALM=my-realm-1
+KC_CLIENT_USER=my-client-bpm
+KC_CLIENT_SECRET=my-secret-bpm
+USER_NAME=alice
+USER_PWD=alice
+KC_TOKEN_EXPIRATION=""
+KC_TOKEN_SCOPE=""
+
+# login
+KC_FULL_TOKEN=$(curl -sk -X POST http://localhost:${KC_PORT}/realms/${KC_REALM}/protocol/openid-connect/token \
+  --user ${KC_CLIENT_USER}:${KC_CLIENT_SECRET} -H 'content-type: application/x-www-form-urlencoded' \
+  -d 'username='${USER_NAME}'&password='${USER_PWD}'&grant_type=password&scope=openid')
+
+if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then echo "Logged in"; else echo "Not logged in"; fi
+
+if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC_TOKEN=$(echo "${KC_FULL_TOKEN}" | jq '.access_token' | sed 's/"//g'); else KC_TOKEN=""; fi
+
+if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC_TOKEN_EXPIRATION=$(echo $KC_FULL_TOKEN | jq .expires_in | sed 's/"//g'); fi
+
+if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC_TOKEN_SCOPE=$(echo $KC_FULL_TOKEN | jq .scope | sed 's/"//g'); fi
+
+echo "Token expires in: ${KC_TOKEN_EXPIRATION}"
+echo "Token scopes: ${KC_TOKEN_SCOPE}"
+
+</pre>
+
+This is an example of KC_FULL_TOKEN content
+
+echo $KC_FULL_TOKEN | jq .
+
+<pre>
+{
+  "access_token": "eyJhbGci.......HRPcCOaTVgeXw",
+  "expires_in": 14400,
+  "refresh_expires_in": 1800,
+  "refresh_token": "eyJhbGciOiJIUzUx........6oZGLEBf7GDL8ZUdG1w",
+  "token_type": "Bearer",
+  "id_token": "eyJhbGciOi.........coosgBAgaRUm34cfVeZJw",
+  "not-before-policy": 0,
+  "session_state": "e9fcaf93-dd0a-4cce-8c3a-64cd3f2b9c1b",
+  "scope": "openid profile email my-bpm-scope"
+}
+</pre>
+
+### 2. Start a process instance
+
+The 'frontend' application exposes REST API on path '/bamoe'
+
+As from configuration only users belonging to 'HR' role can start process instances. So 'alice' is authorized.
+<pre>
+# list of roles authorized to start a process instance
+# last key segment must be equal to process name
+marco.bamoe.process-starter-roles.hiring=HR
+</pre>
+
+<pre>
+_PROCESS_NAME=hiring
+
+INSTANCE_RESULT=$(curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN} \
+  -X POST http://localhost:8880/bamoe/process-instances/${_PROCESS_NAME} \
+    -d '{"candidateData": { "name": "Jon", "lastName": "Snow", "email": "jon@snow.org", "experience": 5, "skills": ["Java", "Kogito", "Fencing"]}}' )
+    
+echo ${INSTANCE_RESULT} | jq .
+_PROC_ID=$(echo ${INSTANCE_RESULT} | jq .id | sed 's/"//g')
+echo "new instance id: "${_PROC_ID}
+</pre>
+
+Now try the same command with verbose flag -v and without the 'Authorization' header or with fake value
+
+MUST fail
+<pre>
+curl -v -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer XYZ" \
+  -X POST http://localhost:8880/bamoe/process-instances/${_PROCESS_NAME} \
+    -d '{"candidateData": { "name": "Jon", "lastName": "Snow", "email": "jon@snow.org", "experience": 5, "skills": ["Java", "Kogito", "Fencing"]}}'
+</pre>
+
+the error is '401 Unauthorized' and text should be similar to
+<pre>
+> POST /bamoe/process-instances/hiring HTTP/1.1
+> Host: localhost:8880
+> User-Agent: curl/7.76.1
+> Content-Type: application/json
+> Accept: application/json
+> Authorization: Bearer XYZ
+> Content-Length: 138
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 401 Unauthorized
+< www-authenticate: Bearer
+< content-length: 0
+< 
+* Connection #0 to host localhost left intact
+</pre>
+
+Now login with user 'john' and try to start a process instance.
+<pre>
+USER_NAME=john
+USER_PWD=john
+
+KC_PORT=44444
+KC_REALM=my-realm-1
+KC_CLIENT_USER=my-client-bpm
+KC_CLIENT_SECRET=my-secret-bpm
+KC_TOKEN_EXPIRATION=""
+KC_TOKEN_SCOPE=""
+KC_FULL_TOKEN=$(curl -sk -X POST http://localhost:${KC_PORT}/realms/${KC_REALM}/protocol/openid-connect/token \
+  --user ${KC_CLIENT_USER}:${KC_CLIENT_SECRET} -H 'content-type: application/x-www-form-urlencoded' \
+  -d 'username='${USER_NAME}'&password='${USER_PWD}'&grant_type=password&scope=openid')
+if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then echo "Logged in"; else echo "Not logged in"; fi
+if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC_TOKEN=$(echo "${KC_FULL_TOKEN}" | jq '.access_token' | sed 's/"//g'); else KC_TOKEN=""; fi
+if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC_TOKEN_EXPIRATION=$(echo $KC_FULL_TOKEN | jq .expires_in | sed 's/"//g'); fi
+if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC_TOKEN_SCOPE=$(echo $KC_FULL_TOKEN | jq .scope | sed 's/"//g'); fi
+echo "Token expires in: ${KC_TOKEN_EXPIRATION}"
+echo "Token scopes: ${KC_TOKEN_SCOPE}"
+
+</pre>
+
+<pre>
+curl -v -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN} \
+  -X POST http://localhost:8880/bamoe/process-instances/${_PROCESS_NAME} \
+    -d '{"candidateData": { "name": "Jon", "lastName": "Snow", "email": "jon@snow.org", "experience": 5, "skills": ["Java", "Kogito", "Fencing"]}}'
+</pre>
+
+the error is '403 Forbidden' and text should be similar to
+<pre>
+> Content-Length: 138
+> 
+* Mark bundle as not supporting multiuse
+< HTTP/1.1 403 Forbidden
+< content-length: 0
+< 
+* Connection #0 to host localhost left intact
+</pre>
+
+### 3. Get a list of process instances
+
+Login again with user 'alice', he has the role granted to interact with first human-tak in the process.
+
+Then run the following requests
+
+<pre>
+# get the list of process instances
+curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/process-instances/${_PROCESS_NAME} | jq .
+</pre>
+
+Then copy the value of an process instance id and set into _PROC_ID variable.
+
+For example
+<pre>
+_PROC_ID=9824a8d9-f611-4cfc-af0c-96a1426e309d
+
+# get the details of an instance
+curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/process-data/${_PROCESS_NAME}/${_PROC_ID} | jq .
+</pre>
+
+<pre>
+# get the tasks list for an instance
+_PROC_ID=9824a8d9-f611-4cfc-af0c-96a1426e309d
+curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/task-list/${_PROCESS_NAME}/${_PROC_ID} | jq .
+</pre>
+
+### 3. Get a list of tasks for a process instances
+
+Then copy the value of id for an HRInterview task instance into TASK_ID variable.
+
+<pre>
+# get task details
+_PROC_ID=9824a8d9-f611-4cfc-af0c-96a1426e309d
+TASK_ID=748ec1f8-3d72-410a-a54b-309d0a5704cd
+TASK_NAME=HRInterview
+
+curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/task-instance/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} | jq .
+</pre>
+
+### 4. Claim a tasks
+
+Continue to use the variable values used in previous step.
+
+<pre>
+curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN} -X POST http://localhost:8880/bamoe/task-claim/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} | jq .
+</pre>
+
+now read again the details of the same task 
+
+<pre>
+curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/task-instance/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} | jq .
+</pre>
+
+note that the task status has now changed from
+
+<pre>
+  "phase": "active",
+  "phaseStatus": "Ready",
+</pre>
+
+to 
+
+<pre>
+  "phase": "claim",
+  "phaseStatus": "Reserved",
+</pre>
+
+### 5. Complete a tasks
+
+Continue to use the variable values used in previous step.
+
+<pre>
+# complete task
+curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN} -X POST http://localhost:8880/bamoe/task-complete/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} \
+-d '{
+  "offer": {
+    "category": "Very Old Senior Software Engineer",
+    "salary": 99999
+  },
+  "candidate": {
+    "name": "Jon",
+    "lastName": "Snow",
+    "email": "jon@snow.org",
+    "experience": 5,
+    "skills": [
+      "Java",
+      "Kogito",
+      "Fencing"
+    ]
+  },
+  "approve": true
+}' | jq .
+
+</pre>
+
+Now the task is completed, login with user 'john' and do the same steps to complete the 'ITInterview' human-task.
