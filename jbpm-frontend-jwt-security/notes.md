@@ -1,23 +1,15 @@
 # Notes / Commands
 
-## References
-<pre>
-https://quarkus.io/guides/security-openid-connect-client
 
-</pre>
-
-## Addons
-<pre>
-✬ ArtifactId                                         Extension Name
-✬ quarkus-cache                                      Cache
-✬ quarkus-oidc                                       OpenID Connect
-✬ quarkus-rest                                       REST
-✬ quarkus-rest-client-oidc-filter                    REST Client - OpenID Connect Filter
-✬ quarkus-rest-client-oidc-token-propagation         REST Client - OpenID Connect Token Propagation
-</pre>
-
-
+Run backend in a dedicate shell
 ```
+cd ./jbpm-compact-architecture-security
+quarkus dev
+```
+
+Run frontend in a dedicate shell
+```
+cd ./jbpm-frontend-jwt-security
 quarkus dev
 ```
 
@@ -31,12 +23,13 @@ For IT role users: john, marco
 #---------------------------------
 # token for HR user
 
+USER_NAME=alice
+USER_PWD=alice
+
 KC_PORT=44444
 KC_REALM=my-realm-1
 KC_CLIENT_USER=my-client-bpm
 KC_CLIENT_SECRET=my-secret-bpm
-USER_NAME=alice
-USER_PWD=alice
 KC_TOKEN_EXPIRATION=""
 KC_TOKEN_SCOPE=""
 KC_FULL_TOKEN=$(curl -sk -X POST http://localhost:${KC_PORT}/realms/${KC_REALM}/protocol/openid-connect/token \
@@ -51,7 +44,7 @@ echo "Token scopes: ${KC_TOKEN_SCOPE}"
 
 _PROCESS_NAME=hiring
 
-# avvia istanza
+# start process instance
 INSTANCE_RESULT=$(curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN} \
   -X POST http://localhost:8880/bamoe/process-instances/${_PROCESS_NAME} \
     -d '{"candidateData": { "name": "Jon", "lastName": "Snow", "email": "jon@snow.org", "experience": 5, "skills": ["Java", "Kogito", "Fencing"]}}' )
@@ -60,26 +53,27 @@ echo ${INSTANCE_RESULT} | jq .
 _PROC_ID=$(echo ${INSTANCE_RESULT} | jq .id | sed 's/"//g')
 echo "new instance id: "${_PROC_ID}
 
-# legge istanze processi
+# get process instances
 curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/process-instances/${_PROCESS_NAME} | jq .
 
-# dettaglio istanza processo
+# get a single process instance
+_PROC_ID=57914b0e-cf11-411f-bf97-75212087eac8
 curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/process-data/${_PROCESS_NAME}/${_PROC_ID} | jq .
 
-# lista task della istanza
+# get task list for a process instance
+_PROC_ID=57914b0e-cf11-411f-bf97-75212087eac8
 curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/task-list/${_PROCESS_NAME}/${_PROC_ID} | jq .
 
-# legge dettaglio istanza task
+# get task data
 TASK_NAME=HRInterview
-TASK_ID=748ec1f8-3d72-410a-a54b-309d0a5704cd
-
+TASK_ID=199f0c94-0392-4341-9869-19f4ee048d30
 curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/task-instance/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} | jq .
 
 # claim task
 curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN} -X POST http://localhost:8880/bamoe/task-claim/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} | jq .
 
 
-# aggiorna dettaglio istanza task
+# update task
 curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN} -X PUT http://localhost:8880/bamoe/task-instance/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} \
 -d '{
   "offer": {
@@ -125,12 +119,13 @@ curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Au
 #---------------------------------
 # token for IT user
 
+USER_NAME=john
+USER_PWD=john
+
 KC_PORT=44444
 KC_REALM=my-realm-1
 KC_CLIENT_USER=my-client-bpm
 KC_CLIENT_SECRET=my-secret-bpm
-USER_NAME=john
-USER_PWD=john
 KC_TOKEN_EXPIRATION=""
 KC_TOKEN_SCOPE=""
 KC_FULL_TOKEN=$(curl -sk -X POST http://localhost:${KC_PORT}/realms/${KC_REALM}/protocol/openid-connect/token \
@@ -143,12 +138,13 @@ if ([[ ! -z "${KC_FULL_TOKEN}" ]] && [[ "${KC_FULL_TOKEN}" != "null" ]]) then KC
 echo "Token expires in: ${KC_TOKEN_EXPIRATION}"
 echo "Token scopes: ${KC_TOKEN_SCOPE}"
 
-# lista task della istanza
+# get task list for a process instance
 curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/task-list/${_PROCESS_NAME}/${_PROC_ID} | jq .
 
 TASK_NAME=ITInterview
-TASK_ID=0dbf03de-7a77-4916-843c-0560d0988abb
+TASK_ID=636b75d5-01ab-4f8e-8a99-8603e6511110
 
+# complete task
 curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN} -X POST http://localhost:8880/bamoe/task-complete/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} \
 -d '{
   "approve": true
