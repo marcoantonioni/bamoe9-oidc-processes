@@ -267,7 +267,7 @@ Instructions to run a test:
 ### Frontend application
 Open a first shell in the folder 'jbpm-frontend-jwt-security' and run the command <pre>quarkus dev</pre>
 
-The dev-services start a Keycloak container based on 'quay.io/keycloak/keycloak:25.0.6' according to dependency.
+The Quarkus dev-services start a Keycloak container based on 'quay.io/keycloak/keycloak:25.0.6' according to dependency.
 
 This Keycloak server is configured on port 44444 with custom realm defined in 'my-realm-1-realm.json'.
 
@@ -284,7 +284,7 @@ quarkus.http.port=8880
 ### Backend application
 Open a second shell in the folder 'jbpm-compact-architecture-security' and run the command <pre>quarkus dev</pre>
 
-The dev-services start a Postgres container based on 'docker.io/library/postgres:14' according to dependency.
+The Quarkus dev-services start a Postgres container based on 'docker.io/library/postgres:14' according to dependency.
 
 The dev-ui is at the link http://localhost:8080/q/dev-ui/extensions
 
@@ -491,7 +491,7 @@ curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamo
 
 ### 4. Claim a tasks
 
-Continue to use the variable values used in previous step.
+Continue to use the shell environment variable values used in previous step.
 
 ```
 curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN} -X POST http://localhost:8880/bamoe/task-claim/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} | jq .
@@ -517,9 +517,9 @@ to
   "phaseStatus": "Reserved",
 </pre>
 
-### 5. Complete a tasks
+### 5. Complete a task
 
-Continue to use the variable values used in previous step.
+Continue to use the shell environment variable values used in previous step.
 
 ```
 # complete task
@@ -545,7 +545,9 @@ curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Au
 
 ```
 
-Now the task is completed, login with user 'john' and do the same steps to complete the 'ITInterview' human-task, use:
+Now the task is completed, login with user 'john' and repeat the same task steps to complete the 'ITInterview' human-task. 
+
+Use 'ITInterview' value
 ```
 TASK_NAME=ITInterview
 ```
