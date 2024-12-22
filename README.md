@@ -133,6 +133,118 @@ Users in group HRGroup (role HR): <b>alice</b>, <b>mary</b>
 
 Users in group ITGroup (role IT): <b>john</b>, <b>marco</b>
 
+#### JWT Token structure
+
+The token that is issued by Keycloak upon login has the following structure and attributes:
+<pre>
+{
+  "access_token": "eyJhbGci.......HRPcCOaTVgeXw",
+  "expires_in": 14400,
+  "refresh_expires_in": 1800,
+  "refresh_token": "eyJhbGciOiJIUzUx........6oZGLEBf7GDL8ZUdG1w",
+  "token_type": "Bearer",
+  "id_token": "eyJhbGciOi.........coosgBAgaRUm34cfVeZJw",
+  "not-before-policy": 0,
+  "session_state": "e9fcaf93-dd0a-4cce-8c3a-64cd3f2b9c1b",
+  "scope": "openid profile email my-bpm-scope"
+}
+</pre>
+
+To interact with protected APIs, the value of the '<b>access_token</b>' attribute is used.
+
+In turn, this value defines a further json structure that can be revealed for example via the site https://jwt.io/
+
+An example is the following for a login performed with the credentials of the user 'alice', let's see the three sections:
+
+HEADER:ALGORITHM & TOKEN TYPE
+<pre>
+{
+  "alg": "RS256",
+  "typ": "JWT",
+  "kid": "yS2j6SWGjuvXSoxZ_mTAPhp87IbTIcef5Vb6X6EG-ds"
+}
+</pre>
+
+PAYLOAD:DATA
+<pre>
+{
+  "exp": 1734872738,
+  "iat": 1734858338,
+  "jti": "3789159c-743c-4921-a166-652eb421ff4a",
+  <b><i>"iss"</i></b>: "http://localhost:44444/realms/my-realm-1",
+  "aud": "account",
+  "sub": "2acc41df-e89a-4d31-a7ea-04281b018936",
+  "typ": "Bearer",
+  <b><i>"azp"</i></b>: "my-client-bpm",
+  "sid": "5338aabc-65d3-4859-be79-ae52ffabfec1",
+  "acr": "1",
+  "realm_access": {
+    <b><i>"roles"</i></b>: [
+      "MyRoleViewer",
+      "offline_access",
+      <b><i>"HR"</i></b>,
+      "uma_authorization",
+      "default-roles-my-realm-1"
+    ]
+  },
+  "resource_access": {
+    "account": {
+      "roles": [
+        "manage-account",
+        "manage-account-links",
+        "view-profile"
+      ]
+    }
+  },
+  <b><i>"scope"</i></b>: "openid profile email my-bpm-scope",
+  "email_verified": false,
+  "name": "alice alice",
+  "preferred_username": "alice",
+  <b><i>"given_name"</i></b>: "alice",
+  "family_name": "alice",
+  "email": "alice@home.net"
+}
+</pre>
+
+VERIFY SIGNATURE
+<pre>
+RSASHA256(
+  base64UrlEncode(header) + "." +
+  base64UrlEncode(payload),
+.......
+</pre>
+
+The most interesting section for this scenario is <b>PAYLOAD:DATA</b>.
+
+This section contains the attributes related to the username, the roles associated with it and a series of information that allow you to trace from which server, with which client-id and which purposes have been configured for this token.
+
+The values ​​related to the user and its roles will be dynamically taken from the 'frontend' APIs and used for downstream invocations towards the BPM application.
+
+As you can see the user 'alice' belongs to role 'HR'.
+
+The values ​​related to the user and roles are readjusted based on the signature of the APIs exposed by the application for the process domain.
+
+For example, the Java class automatically generated for the execution of the 'hiring' process defines among many the method <b>completeTask_HRInterview_0</b> that works for human task 'HRInterview'.
+
+<pre>
+    @POST
+    @Path("/{id}/HRInterview/{taskId}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public HiringModelOutput <b>completeTask_HRInterview_0</b>(
+          @PathParam("id") final String id, 
+          @PathParam("taskId") final String taskId, 
+          @QueryParam("phase") @DefaultValue("complete") final String phase, 
+          @QueryParam("user") final String user, 
+          @QueryParam("group") final List<String> groups, 
+          final org.kie.kogito.hr.Hiring__B8C4F63C_81AD_4291_9C1B_84967277EEF6_TaskOutput model) {
+        return processService.taskTransition(process, id, taskId, phase, SecurityPolicy.of(user, groups), model).orElseThrow(NotFoundException::new);
+    }
+</pre>
+
+The frontend APIs readjust the list of roles read from the JWT token and through a POST operation with a series of parameters named 'group' each of which contains the value of one of the roles present in the token. 
+
+In this way the frontend APIs ensure that the interactions towards the process APIs are invoked in complete safety at least for users and roles present in the token.
 
 ## Blueprint solution known limits
 
