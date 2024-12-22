@@ -23,7 +23,7 @@ In an architectural scenario based on micro-services concepts, the choice made f
 
 To keep the BPMN application as free as possible from external dependencies (other Quarkus extensions and any prerequisites of runtime versions) it was decided to externalize the standard REST transport protection layer on another container, making the most of the security potential applicable to the API and integration with external OIDC systems; in this example a Keycloak server will be used with a realm customized specifically for this scenario.
 
-The blueprint defines the presence of two containers defined for the same pod. The communication between the two containers is based on the ip address 127.0.0.1. The 'backend' container that will contain the BPMN application will not have http ports exposed to the Service but can only be reached by internal calls or by the 'frontend' container via ip 127.0.0.1. The 'frontend' container exposes custom and protected REST APIs that allow requests to be mediated towards the 'backend' container.
+The blueprint defines the presence of two containers running in the same pod. The communication between the two containers is based on the ip address 127.0.0.1. The 'backend' container that will contain the BPMN application will not have http ports exposed to the Service but can only be reached by internal calls or by the 'frontend' container via ip 127.0.0.1. The 'frontend' container exposes custom and protected REST APIs that allow requests to be mediated towards the 'backend' container.
 
 ![Architectural overview](./docs/BAMOE9-SecurityBlueprint.png "Architectural overview")
 
@@ -261,6 +261,8 @@ Any use in whole or in part is at your own risk.
 </i></b>
 
 ## Run the demo
+
+To run the demo you need a set of requirements that you can find at https://www.ibm.com/docs/en/ibamoe/9.1.x?topic=installing
 
 Instructions to run a test:
 
@@ -551,3 +553,9 @@ Use 'ITInterview' value
 ```
 TASK_NAME=ITInterview
 ```
+
+## References
+
+https://www.ibm.com/docs/en/ibamoe/9.1.x
+
+https://www.ibm.com/docs/en/ibamoe/9.1.x?topic=technology-preview-developing-process-services
