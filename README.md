@@ -1,4 +1,4 @@
-# BAMOE v9 OIDC Authentication / Authorization using Keycloak (JWT token)
+# BAMOE v9 process management using OIDC Authentication / Authorization (Keycloak JWT token)
 
 PoT for client authentication and autorization for BAMOE v9 processes/tasks using Keycloak OIDC and JWT tokens
 
