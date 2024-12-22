@@ -152,7 +152,7 @@ The token that is issued by Keycloak upon login has the following structure and 
 
 To interact with protected APIs, the value of the '<b>access_token</b>' attribute is used.
 
-In turn, this value defines a further json structure that can be revealed for example via the site https://jwt.io/
+In turn, this value defines a further json structure that can be revealed for example via the site <a href="[https://jwt.io](https://jwt.io)" target="_blank">https://jwt.io</a>
 
 An example is the following for a login performed with the credentials of the user 'alice', let's see the three sections:
 
