@@ -2,36 +2,6 @@
 
 THIS PROJECT IS A COPY OF "kogito-examples/kogito-quarkus-examples/jbpm-compact-architecture-example" from "bamoe-9.1.1-examples.zip"
 
-
-## List of URL from OpenAPI endpoint
-vedi application.properties: <i>quarkus.smallrye-openapi.path=/docs/openapi.json</i>
-<pre>
-# extract all exposed urls
-curl http://localhost:8080/docs/openapi.json | jq .paths | jq 'keys_unsorted'
-
-# extract only exposed urls for processes
-curl -s http://localhost:8080/docs/openapi.json | jq .paths | jq 'keys_unsorted' | grep -E "hiring|RequestForApproval|FreeAccess" | sed 's/ //g' | sed 's/"//g' | sed 's/,//g' > ./docs/process-urls.txt
-</pre>
-
-
-<pre>
-mvn clean compile package -Pcontainer
-</pre>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Description
 
 This example showcases a basic implementation of the **Hiring** process that drives a _Candidate_ through different
