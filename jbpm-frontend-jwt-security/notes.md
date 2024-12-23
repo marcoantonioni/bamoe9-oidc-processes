@@ -57,16 +57,16 @@ echo "new instance id: "${_PROC_ID}
 curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/process-instances/${_PROCESS_NAME} | jq .
 
 # get a single process instance
-_PROC_ID=57914b0e-cf11-411f-bf97-75212087eac8
+_PROC_ID=8d21b9b1-9287-47e4-82a1-432f202daa53
 curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/process-data/${_PROCESS_NAME}/${_PROC_ID} | jq .
 
 # get task list for a process instance
-_PROC_ID=57914b0e-cf11-411f-bf97-75212087eac8
+_PROC_ID=8d21b9b1-9287-47e4-82a1-432f202daa53
 curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/task-list/${_PROCESS_NAME}/${_PROC_ID} | jq .
 
 # get task data
 TASK_NAME=HRInterview
-TASK_ID=199f0c94-0392-4341-9869-19f4ee048d30
+TASK_ID=5a90dff2-1125-40e9-b3df-ed64ecb4d4fd
 curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/task-instance/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} | jq .
 
 # claim task
@@ -152,9 +152,10 @@ curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Au
 
 #---------------------------------------------
 # graphql
-# NOT YET IMPLEMENTED
 
-curl -v -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN}   -X POST http://localhost:8880/bamoe/graphql -d '{}' | jq .
+curl -v -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN}   -X POST http://localhost:8880/bamoe/list-all-processes -d '{}' | jq .
+
+curl -v -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN}   -X POST http://localhost:8880/bamoe/list-all-tasks -d '{}' | jq .
 
 
 ```

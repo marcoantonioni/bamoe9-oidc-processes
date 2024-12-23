@@ -1,5 +1,6 @@
 package marco.studio.frontend;
 
+import java.io.StringReader;
 import java.util.Map;
 import java.util.StringTokenizer;
 import org.eclipse.microprofile.config.ConfigProvider;
@@ -11,7 +12,9 @@ import io.quarkus.logging.Log;
 import io.quarkus.security.Authenticated;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
+import jakarta.json.Json;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.NotAllowedException;
@@ -143,16 +146,33 @@ public class MyBamoeFrontend {
   }
 
   @POST
-  @Path("graphql")
+  @Path("list-all-processes")
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
-  public Uni<JsonObject> graphql(JsonObject payload) {
-    String _msg = "graphql API not yet implemented";
-    Log.info("===>>> MyBamoeFrontend graphql, " + _msg);
-    throw new NotImplementedYet();
+  public Uni<JsonObject> graphqlProcesses(JsonObject payload) {
+    // this graphql query is in a "horrible" format :) but it's just for demonstration
+    String query = "{\"operationName\":\"getProcessInstances\",\"variables\":{\"where\":{\"parentProcessInstanceId\":{\"isNull\":true},\"state\":{\"in\":[\"ACTIVE\"]}},\"offset\":0,\"limit\":10,\"orderBy\":{\"lastUpdate\":\"DESC\"} },\"query\":\"query getProcessInstances($where: ProcessInstanceArgument, $offset: Int, $limit: Int, $orderBy: ProcessInstanceOrderBy) { ProcessInstances(where: $where, pagination: {offset: $offset, limit: $limit}, orderBy: $orderBy) { id processId processName parentProcessInstanceId rootProcessInstanceId roles state start lastUpdate addons businessKey serviceUrl error { nodeDefinitionId message __typename } __typename }}\" } }";
+    JsonReader reader = Json.createReader(new StringReader(query));
+    JsonObject queryPayload = reader.readObject();
+
+    Log.info("===>>> MyBamoeFrontend graphql list-all-processes, calling backend service...");
+    return myRCBamoe.graphql(cacheIds.generateServiceId("BAMOE"), queryPayload);
   }
 
+  @POST
+  @Path("list-all-tasks")
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Uni<JsonObject> graphqlTasks(JsonObject payload) {
+    String roles = TokenUtils.getRolesAsGQLQ(principal);
+    // this graphql query is in a "horrible" format :) but it's just for demonstration
+    String query = "{ \"operationName\":\"getTasksForUser\", \"variables\":{ \"whereArgument\":{ \"and\":[ {\"or\": [ {\"actualOwner\":{\"equal\":\""+principal.getName()+"\"}}, {\"and\": [ {\"actualOwner\":{\"isNull\":true}}, {\"not\":{\"excludedUsers\":{\"contains\":\""+principal.getName()+"\"}}}, {\"or\":[ {\"potentialUsers\":{\"contains\":\""+principal.getName()+"\"}}, {\"potentialGroups\":{\"containsAny\":["+roles+"]}} ] } ] } ] }, { \"and\":[{\"state\":{\"in\":[\"Ready\",\"Reserved\"]}}] } ] }, \"offset\":0,\"limit\":10,\"orderBy\":{\"lastUpdate\":\"DESC\"} }, \"query\":\"query getTasksForUser($whereArgument: UserTaskInstanceArgument, $offset: Int, $limit: Int, $orderBy: UserTaskInstanceOrderBy) { UserTaskInstances(where: $whereArgument, pagination: {offset: $offset, limit: $limit}, orderBy: $orderBy) { id name referenceName description priority processInstanceId processId rootProcessInstanceId rootProcessId state actualOwner adminGroups adminUsers completed started excludedUsers potentialGroups potentialUsers inputs outputs lastUpdate endpoint __typename }}\"}";
+    JsonReader reader = Json.createReader(new StringReader(query));
+    JsonObject queryPayload = reader.readObject();
 
+    Log.info("===>>> MyBamoeFrontend graphql list-all-tasks, calling backend service...");
+    return myRCBamoe.graphql(cacheIds.generateServiceId("BAMOE"), queryPayload);
+  }
 
   @ServerExceptionMapper(NotAllowedException.class)
   public Response notAuthorized() {

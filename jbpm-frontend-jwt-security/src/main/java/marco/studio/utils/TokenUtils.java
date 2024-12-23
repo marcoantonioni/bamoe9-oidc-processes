@@ -54,4 +54,28 @@ public class TokenUtils {
     return _rolesData;
   }
 
+  public static String getRolesAsGQLQ(JsonWebToken principal) {
+    StringBuffer _rolesData = new StringBuffer();
+    if (principal != null) {
+      JsonObject realmAccess = (JsonObject) principal.getClaim("realm_access");
+      Log.trace("===>>> TokenUtils getRolesAsMap realmAccess: " + realmAccess);
+      if (realmAccess != null) {
+        JsonArray _arrRoles = (JsonArray) realmAccess.get("roles");
+        if (_arrRoles != null) {
+          int maxRoles = _arrRoles.size();
+          int idx = 0;
+          for (JsonValue jsonValue : _arrRoles) {
+            String _r = new String(jsonValue.toString()).trim();
+            _rolesData.append(_r);
+            if (++idx < (maxRoles)) {
+              _rolesData.append(",");
+            }
+          }
+          Log.trace("===>>> TokenUtils getRolesAsGQLQ user[" + principal.getName() + "] roles: " + _rolesData.toString());
+        }
+      }
+    }
+    return _rolesData.toString();
+  }
+
 }
