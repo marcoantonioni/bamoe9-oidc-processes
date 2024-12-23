@@ -8,6 +8,9 @@ The goal of this repository is to present a possible functional and architectura
 
 In this scenario we will use the IBM BAMOE v9.1.1 distribution with the technology preview of BPMN processes.
 
+## OIDC
+
+OIDC is an authentication layer on top of the OAuth 2.0 authorization framework. It allows computing clients to verify the identity of an end user based on the authentication performed by an authorization server, as well as to obtain the basic profile information about the end user in an interoperable and REST-like manner. In technical terms, OpenID Connect specifies a RESTful HTTP API, using JSON as a data format.
 
 ## Security scenario
 
@@ -572,3 +575,5 @@ TASK_NAME=ITInterview
 https://www.ibm.com/docs/en/ibamoe/9.1.x
 
 https://www.ibm.com/docs/en/ibamoe/9.1.x?topic=technology-preview-developing-process-services
+
+https://openid.net/developers/how-connect-works
