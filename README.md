@@ -133,6 +133,19 @@ Users in group HRGroup (role HR): <b>alice</b>, <b>mary</b>
 
 Users in group ITGroup (role IT): <b>john</b>, <b>marco</b>
 
+##### Create your new Realm
+
+If you want to create a test realm with your configurations you can use this simple tool 
+<a href="https://github.com/marcoantonioni/keycloak-postgres-compose" target="_blank">https://github.com/marcoantonioni/keycloak-postgres-compose</a>
+
+The tool uses the version tagged 'latest' and has a configuration attribute that is not compatible with the Keycloak version used by Quarkus DevServices when preparing this PoT.
+You can remove the blocking tag with the following command:
+
+```
+sed -i 's/"bruteForceStrategy" : "MULTIPLE",//g' ./YOUR-REALM-FILE.json
+```
+
+
 #### JWT Token structure
 
 The token that is issued by Keycloak upon login has the following structure and attributes:
