@@ -153,8 +153,10 @@ curl -s -H "Content-Type: application/json" -H "Accept: application/json" -H "Au
 #---------------------------------------------
 # graphql
 
+# list all active process instances
 curl -v -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN}   -X POST http://localhost:8880/bamoe/list-all-processes -d '{}' | jq .
 
+# list all active tasks instances for user roles
 curl -v -H "Content-Type: application/json" -H "Accept: application/json" -H "Authorization: Bearer "${KC_TOKEN}   -X POST http://localhost:8880/bamoe/list-all-tasks -d '{}' | jq .
 
 

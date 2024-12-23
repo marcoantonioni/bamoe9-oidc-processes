@@ -34,6 +34,7 @@ import marco.studio.utils.TokenUtils;
 public class MyBamoeFrontend {
 
   static String _starterRolesPrefix = "marco.bamoe.process-starter-roles.";
+  static String _viewerRolesPrefix = "marco.bamoe.process-viewer-roles";
 
   @Inject
   JsonWebToken principal;
@@ -45,7 +46,7 @@ public class MyBamoeFrontend {
   @RestClient
   MyBamoeRestClient myRCBamoe;
 
-  private boolean _roleEnabled(String processName, Map<String, String> _roles) {
+  private boolean _roleStarterEnabled(String processName, Map<String, String> _userRoles) {
     boolean _enabled = true;
     String _configuredRoles = ConfigProvider.getConfig().getValue(_starterRolesPrefix + processName, String.class);
     if (_configuredRoles != null && _configuredRoles.length() > 0) {
@@ -54,7 +55,27 @@ public class MyBamoeFrontend {
       boolean roleFound = false;
       while (st.hasMoreElements()) {
         String _token = st.nextToken().trim();
-        roleFound = _roles.get(_token) != null;
+        roleFound = _userRoles.get(_token) != null;
+        if (roleFound) {
+          _enabled = true;
+          break;
+        }
+      }
+
+    }
+    return _enabled;
+  }
+
+  private boolean _roleViewerEnabled(Map<String, String> _userRoles) {
+    boolean _enabled = true;
+    String _configuredRoles = ConfigProvider.getConfig().getValue(_viewerRolesPrefix, String.class);
+    if (_configuredRoles != null && _configuredRoles.length() > 0) {
+      _enabled = false;
+      StringTokenizer st = new StringTokenizer(_configuredRoles, ",");
+      boolean roleFound = false;
+      while (st.hasMoreElements()) {
+        String _token = st.nextToken().trim();
+        roleFound = _userRoles.get(_token) != null;
         if (roleFound) {
           _enabled = true;
           break;
@@ -71,7 +92,7 @@ public class MyBamoeFrontend {
   @Produces(MediaType.APPLICATION_JSON)
   public Uni<JsonObject> startProcessInstance(@PathParam(value = "processName") String processName, JsonObject payload) {
     Map<String, String> _roles = TokenUtils.getRolesAsMap(principal);
-    if (_roleEnabled(processName, _roles)) {
+    if (_roleStarterEnabled(processName, _roles)) {
       Log.info("===>>> MyBamoeFrontend startProcessInstance, user[" + principal.getName() + "] with roles[" + _roles.keySet() + "] calling backend service...");
       return myRCBamoe.startProcessInstance(cacheIds.generateServiceId("BAMOE"), processName, payload);
     } else {      
@@ -150,13 +171,19 @@ public class MyBamoeFrontend {
   @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   public Uni<JsonObject> graphqlProcesses(JsonObject payload) {
-    // this graphql query is in a "horrible" format :) but it's just for demonstration
-    String query = "{\"operationName\":\"getProcessInstances\",\"variables\":{\"where\":{\"parentProcessInstanceId\":{\"isNull\":true},\"state\":{\"in\":[\"ACTIVE\"]}},\"offset\":0,\"limit\":10,\"orderBy\":{\"lastUpdate\":\"DESC\"} },\"query\":\"query getProcessInstances($where: ProcessInstanceArgument, $offset: Int, $limit: Int, $orderBy: ProcessInstanceOrderBy) { ProcessInstances(where: $where, pagination: {offset: $offset, limit: $limit}, orderBy: $orderBy) { id processId processName parentProcessInstanceId rootProcessInstanceId roles state start lastUpdate addons businessKey serviceUrl error { nodeDefinitionId message __typename } __typename }}\" } }";
-    JsonReader reader = Json.createReader(new StringReader(query));
-    JsonObject queryPayload = reader.readObject();
+    Map<String, String> _roles = TokenUtils.getRolesAsMap(principal);
+    if (_roleViewerEnabled(_roles)) {
+      // this graphql query is in a "horrible" format :) but it's just for demonstration
+      String query = "{\"operationName\":\"getProcessInstances\",\"variables\":{\"where\":{\"parentProcessInstanceId\":{\"isNull\":true},\"state\":{\"in\":[\"ACTIVE\"]}},\"offset\":0,\"limit\":10,\"orderBy\":{\"lastUpdate\":\"DESC\"} },\"query\":\"query getProcessInstances($where: ProcessInstanceArgument, $offset: Int, $limit: Int, $orderBy: ProcessInstanceOrderBy) { ProcessInstances(where: $where, pagination: {offset: $offset, limit: $limit}, orderBy: $orderBy) { id processId processName parentProcessInstanceId rootProcessInstanceId roles state start lastUpdate addons businessKey serviceUrl error { nodeDefinitionId message __typename } __typename }}\" } }";
+      JsonReader reader = Json.createReader(new StringReader(query));
+      JsonObject queryPayload = reader.readObject();
 
-    Log.info("===>>> MyBamoeFrontend graphql list-all-processes, calling backend service...");
-    return myRCBamoe.graphql(cacheIds.generateServiceId("BAMOE"), queryPayload);
+      Log.info("===>>> MyBamoeFrontend graphql list-all-processes, calling backend service...");
+      return myRCBamoe.graphql(cacheIds.generateServiceId("BAMOE"), queryPayload);
+    } else {      
+      throw new NotAllowedException(Response.status(405).build());
+    }
+
   }
 
   @POST
