@@ -26,9 +26,15 @@ In an architectural scenario based on micro-services concepts, the choice made f
 
 To keep the BPMN application as free as possible from external dependencies (other Quarkus extensions and any prerequisites of runtime versions) it was decided to externalize the standard REST transport protection layer on another container, making the most of the security potential applicable to the API and integration with external OIDC systems; in this example a Keycloak server will be used with a realm customized specifically for this scenario.
 
-The blueprint defines the presence of two containers running in the same pod. The communication between the two containers is based on the ip address 127.0.0.1. The 'backend' container that will contain the BPMN application will not have http ports exposed to the Service but can only be reached by internal calls or by the 'frontend' container via ip 127.0.0.1. The 'frontend' container exposes custom and protected REST APIs that allow requests to be mediated towards the 'backend' container.
+The blueprint defines the presence of two containers running in the same pod. The communication between the two containers is based on the ip address 127.0.0.1. The 'backend' container that will contain the BPMN application will not have http ports exposed to the K8S Service but can only be reached by internal calls or by the 'frontend' container via address 127.0.0.1. The 'frontend' container exposes custom and protected REST APIs that allow requests to be mediated towards the 'backend' container.
 
 ![Architectural overview](./docs/BAMOE9-SecurityBlueprint.png "Architectural overview")
+
+### Sidecar Pattern
+
+excerpt from "<b>Designing Distributed Systems</b>" Brendan Burns, published by O'Reilly Media, Inc.
+
+<i>The sidecar pattern is a single-node pattern made up of two containers. The first is the application container (backend). It contains the core logic for the application. Without this container, the application would not exist. In addition to the application container, there is a sidecar container (frontend). The role of the sidecar is to augment and improve the application container, often without the application container’s knowledge. In its simplest form, a sidecar container can be used to add functionality to a container that might otherwise be difficult to improve. Sidecar containers are coscheduled onto the same machine via an atomic container group, such as the pod API object in Kubernetes. In addition to being scheduled on the same machine, the application container and sidecar container share a number of resources, including parts of the filesystem, hostname and network, and many other namespaces.</i>
 
 
 ### BPMN application, 'backend' container (jbpm-compact-architecture-security)
