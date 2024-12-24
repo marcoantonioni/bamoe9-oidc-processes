@@ -576,6 +576,67 @@ Use 'ITInterview' value
 TASK_NAME=ITInterview
 ```
 
+## Build images
+
+### jbpm-frontend-jwt-security
+
+extension used: quarkus-container-image-podman
+
+Login to repository
+```
+podman login -u $QUAY_USER -p $QUAY_PWD $QUAY_URL
+```
+
+Build using default name/tag (see application.properties)
+```
+quarkus build -Dquarkus.container-image.build=true
+podman images
+```
+
+Build using custom name/tag
+```
+_IMG_NAME=quay.io/marco_antonioni/bamoe9-process-jwt-security
+_IMG_TAG=1.0.0
+quarkus build -Dquarkus.container-image.build=true -Dquarkus.container-image.image=${_IMG_NAME}:${_IMG_TAG}
+podman images
+```
+
+Push image to repository
+```
+podman push ${_IMG_NAME}:${_IMG_TAG}
+```
+
+### jbpm-compact-architecture-security
+
+See application.properties
+```
+%container.quarkus.container-image.build=true
+%container.quarkus.container-image.push=false
+%container.quarkus.container-image.group=marco_antonioni
+%container.quarkus.container-image.registry=quay.io
+%container.quarkus.container-image.tag=1.0.0
+%container.quarkus.container-image.name=bamoe9-compact-architecture-security
+```
+
+Login to repository
+```
+podman login -u $QUAY_USER -p $QUAY_PWD $QUAY_URL
+```
+
+Build using default name/tag (see application.properties)
+
+```
+mvn clean package -Pcontainer
+```
+
+Push image to repository
+```
+_IMG_NAME=quay.io/marco_antonioni/bamoe9-compact-architecture-security
+_IMG_TAG=1.0.0
+podman push ${_IMG_NAME}:${_IMG_TAG}
+```
+
+
 ## References
 
 https://www.ibm.com/docs/en/ibamoe/9.1.x

@@ -79,8 +79,8 @@ services:
       # Marco: added ':Z' at end of '/tmp/kogito-realm.json'
       - ./keycloak/kogito-realm.json:/tmp/kogito-realm.json:Z
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/auth/realms/kogito-marco"]
-      #test: ["CMD", "curl", "-f", "http://localhost:8080/auth/realms/kogito"]
+      #test: ["CMD", "curl", "-f", "http://localhost:8080/auth/realms/kogito-marco"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/auth/realms/kogito"]
       interval: 2s
       timeout: 1s
       # Marco: Modified 'retries' from 50 to 500
