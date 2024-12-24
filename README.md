@@ -30,7 +30,7 @@ The blueprint defines the presence of two containers running in the same pod. Th
 
 ![Architectural overview](./docs/BAMOE9-SecurityBlueprint.png "Architectural overview")
 
-### Sidecar Pattern
+#### Sidecar Pattern
 
 excerpt from "<b>Designing Distributed Systems</b>" Brendan Burns, published by O'Reilly Media, Inc.
 
