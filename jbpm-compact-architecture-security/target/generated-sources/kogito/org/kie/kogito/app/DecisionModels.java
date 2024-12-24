@@ -25,7 +25,7 @@ public class DecisionModels extends org.kie.kogito.dmn.AbstractDecisionModels {
 
     static {
         init(/* arguments provided during codegen */
-        null, null, readResource(org.drools.util.IoUtils.class.getClassLoader().getResourceAsStream("NewHiringOffer.dmn"), "UTF-8"));
+        null, null, readResource(Application.class.getResourceAsStream("/NewHiringOffer.dmn"), "UTF-8"));
     }
 
     @jakarta.inject.Inject

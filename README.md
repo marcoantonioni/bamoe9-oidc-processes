@@ -580,7 +580,7 @@ TASK_NAME=ITInterview
 
 ### jbpm-frontend-jwt-security
 
-extension used: quarkus-container-image-podman
+extension used: <b>quarkus-container-image-podman</b>
 
 Login to repository
 ```
@@ -627,6 +627,7 @@ Build using default name/tag (see application.properties)
 
 ```
 mvn clean package -Pcontainer
+podman images
 ```
 
 Push image to repository
