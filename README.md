@@ -637,6 +637,31 @@ _IMG_TAG=1.0.0
 podman push ${_IMG_NAME}:${_IMG_TAG}
 ```
 
+### jbpm-frontend-jwt-security
+
+See application.properties
+```
+marco.studio.image.registry=quay.io/marco_antonioni
+marco.studio.image.app-name=bamoe9-process-jwt-security
+marco.studio.image.tag=1.0.0
+quarkus.container-image.image=${marco.studio.image.registry}/${marco.studio.image.app-name}:${marco.studio.image.tag}
+```
+
+Build using default name/tag (see application.properties)
+
+```
+quarkus image build
+podman images
+```
+
+Push image to repository
+```
+_IMG_NAME=quay.io/marco_antonioni/bamoe9-process-jwt-security
+_IMG_TAG=1.0.0
+podman push ${_IMG_NAME}:${_IMG_TAG}
+```
+
+
 
 ## References
 

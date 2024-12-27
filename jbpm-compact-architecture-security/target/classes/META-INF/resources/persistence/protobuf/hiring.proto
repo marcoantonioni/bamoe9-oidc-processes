@@ -1,0 +1,43 @@
+syntax = "proto2"; 
+package org.kie.kogito.hr.hiring; 
+import "kogito-index.proto";
+import "kogito-types.proto";
+option kogito_model = "Hiring";
+option kogito_id = "hiring";
+
+/* @Indexed */ 
+message CandidateData { 
+	option java_package = "org.kie.kogito.hr";
+	/* @Field(index = Index.YES, store = Store.YES) @SortableField */ 
+	optional string email = 1; 
+	/* @Field(index = Index.YES, store = Store.YES) @SortableField */ 
+	optional int32 experience = 2; 
+	/* @Field(index = Index.YES, store = Store.YES) @SortableField */ 
+	optional string lastName = 3; 
+	/* @Field(index = Index.YES, store = Store.YES) @SortableField */ 
+	optional string name = 4; 
+	/* @Field(index = Index.YES, store = Store.YES) @SortableField */ 
+	repeated string skills = 5; 
+}
+/* @Indexed */ 
+message Hiring { 
+	option java_package = "org.kie.kogito.hr";
+	/* @Field(index = Index.YES, store = Store.YES) @SortableField
+ @VariableInfo(tags="input") */ 
+	optional CandidateData candidateData = 1; 
+	/* @Field(index = Index.YES, store = Store.YES) @SortableField */ 
+	optional string id = 2; 
+	/* @Field(index = Index.YES, store = Store.YES) @SortableField
+ @VariableInfo(tags="output") */ 
+	optional Offer offer = 3; 
+	/* @Field(index = Index.YES, store = Store.YES) @SortableField */ 
+	optional org.kie.kogito.index.model.KogitoMetadata metadata = 4; 
+}
+/* @Indexed */ 
+message Offer { 
+	option java_package = "org.kie.kogito.hr";
+	/* @Field(index = Index.YES, store = Store.YES) @SortableField */ 
+	optional string category = 1; 
+	/* @Field(index = Index.YES, store = Store.YES) @SortableField */ 
+	optional int32 salary = 2; 
+}
