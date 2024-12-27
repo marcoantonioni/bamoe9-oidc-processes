@@ -12,4 +12,10 @@ if [[ -f ${PROPERTIES_FILE} ]]; then
     | sed 's/[a-z]/\U&/g' \
     | sed 's/^/            - name: /g' \
     | sort
+
+echo "            - name: QUARKUS_DATASOURCE_JDBC_URL"
+echo "            - name: QUARKUS_DATASOURCE_REACTIVE_URL"
+echo "            - name: QUARKUS_DATASOURCE_USERNAME"
+echo "            - name: QUARKUS_DATASOURCE_PASSWORD"
+
 fi
