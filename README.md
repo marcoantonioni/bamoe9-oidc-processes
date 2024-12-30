@@ -500,7 +500,7 @@ _PROC_ID=9824a8d9-f611-4cfc-af0c-96a1426e309d
 curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/task-list/${_PROCESS_NAME}/${_PROC_ID} | jq .
 ```
 
-### 3. Get a list of tasks for a process instances
+### 4. Get a list of tasks for a process instances
 
 Then copy the value of id for an HRInterview task instance into TASK_ID variable.
 
@@ -513,7 +513,7 @@ TASK_NAME=HRInterview
 curl -s -H "Authorization: Bearer "${KC_TOKEN} -X GET http://localhost:8880/bamoe/task-instance/${_PROCESS_NAME}/${_PROC_ID}/${TASK_NAME}/${TASK_ID} | jq .
 ```
 
-### 4. Claim a tasks
+### 5. Claim a tasks
 
 Continue to use the shell environment variable values used in previous step.
 
@@ -541,7 +541,7 @@ to
   "phaseStatus": "Reserved",
 </pre>
 
-### 5. Complete a task
+### 6. Complete a task
 
 Continue to use the shell environment variable values used in previous step.
 
