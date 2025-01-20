@@ -1,4 +1,4 @@
-/*
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -16,27 +16,46 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.kie.kogito.app;
 
-@jakarta.enterprise.context.ApplicationScoped()
-//<-- Required to force full reload during hot reload
-@io.quarkus.runtime.Startup()
-public class DecisionModels extends org.kie.kogito.dmn.AbstractDecisionModels {
+syntax = "proto2";
 
-    static {
-        init(/* arguments provided during codegen */
-        null, null, readResource(Application.class.getResourceAsStream("/NewHiringOffer.dmn"), "UTF-8"));
-    }
+package kogito;
 
-    @jakarta.inject.Inject
-    protected org.kie.kogito.Application application;
+message String {      
+  optional string data = 1;
+}
 
-    public DecisionModels() {
-        super();
-    }
+message Integer {      
+  optional int32 data = 1;
+}
 
-    @jakarta.annotation.PostConstruct
-    protected void init() {
-        initApplication(application);
-    }
+message Long {      
+  optional int64 data = 1;
+}
+
+message Double {      
+  optional double data = 1;
+}
+
+message Float {      
+  optional float data = 1;
+}
+
+message Boolean {      
+  optional bool data = 1;
+}
+
+message Date {  
+  option java_package = "java.util";    
+  optional int64 data = 1;
+}
+
+message Instant {
+  option java_package = "java.time";
+  optional fixed64 data = 1;
+}
+
+message Serializable {
+  option java_package = "java.io";
+  optional bytes data = 1;
 }

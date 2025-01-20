@@ -1,13 +1,13 @@
 # Notes / Commands
 
 
-Run backend in a dedicate shell
+Run backend in a dedicate shell (DevUI http://localhost:8080/q/dev-ui/extensions)
 ```
 cd ./jbpm-compact-architecture-security
 quarkus dev
 ```
 
-Run frontend in a dedicate shell
+Run frontend in a dedicate shell (DevUI http://localhost:8880/q/dev-ui/extensions)
 ```
 cd ./jbpm-frontend-jwt-security
 quarkus dev
